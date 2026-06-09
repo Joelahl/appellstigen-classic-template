@@ -12,9 +12,12 @@ interface Props {
   params: Promise<{ slug: string }>
 }
 
+// Don't pre-render at build time — use ISR + on-demand generation instead.
+// This allows the site to build without a live CMS connection.
+export const dynamicParams = true
+
 export async function generateStaticParams() {
-  const cards = await getCreditCards()
-  return cards.map((c) => ({ slug: c.slug }))
+  return [] // Pages are rendered on first request and cached via ISR
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

@@ -10,13 +10,19 @@ const headers: Record<string, string> = {
 if (API_KEY) headers['Authorization'] = `Bearer ${API_KEY}`
 
 async function fetchFromCMS<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${CMS_URL}/api${path}`, {
-    ...options,
-    headers,
-    next: { revalidate: 300 }, // 5-minute ISR
-  })
-  if (!res.ok) throw new Error(`CMS fetch failed: ${res.status} ${path}`)
-  return res.json() as Promise<T>
+  try {
+    const res = await fetch(`${CMS_URL}/api${path}`, {
+      ...options,
+      headers,
+      next: { revalidate: 300 }, // 5-minute ISR
+    })
+    if (!res.ok) throw new Error(`CMS fetch failed: ${res.status} ${path}`)
+    return res.json() as Promise<T>
+  } catch (err) {
+    // During build the CMS may not be reachable — return empty data gracefully
+    console.warn(`CMS unavailable (${CMS_URL}): ${err}`)
+    return { docs: [], totalDocs: 0 } as unknown as T
+  }
 }
 
 function mapCard(raw: Record<string, unknown>): CreditCard {
