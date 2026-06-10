@@ -101,7 +101,7 @@ export default async function GenericPage({ params }: Props) {
                   {toplist.length} kort
                 </span>
               </h2>
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
                 {toplist.map((card, i) => (
                   <CreditCardCard key={card.id} card={card} rank={i + 1} />
                 ))}

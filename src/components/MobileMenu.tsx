@@ -31,9 +31,10 @@ export default function MobileMenu({ links }: Props) {
         }`}
       />
 
-      {/* Slide-out panel from the right */}
+      {/* Slide-out panel from the right (explicitly opaque) */}
       <aside
-        className={`fixed right-0 top-0 z-[70] h-full w-72 max-w-[80%] transform bg-white shadow-xl transition-transform duration-300 ${
+        style={{ backgroundColor: '#ffffff' }}
+        className={`fixed right-0 top-0 z-[70] h-full w-72 max-w-[80%] transform bg-white shadow-2xl transition-transform duration-300 ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
