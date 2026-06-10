@@ -6,29 +6,31 @@ interface Props {
 }
 
 export default function CreditCardSchema({ card }: Props) {
+  const hasRating = typeof card.editorRating === 'number' && card.editorRating > 0
+
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: card.cardName,
-    brand: { '@type': 'Brand', name: card.issuer },
-    description: card.verdict || card.seo.metaDescription,
+    ...(card.issuer && { brand: { '@type': 'Brand', name: card.issuer } }),
+    description: card.verdict || card.seo.metaDescription || card.bestFor,
     ...(card.cardImageUrl && { image: card.cardImageUrl }),
     offers: {
       '@type': 'Offer',
       url: `https://${siteConfig.domain}/kreditkort/${card.slug}`,
       availability: 'https://schema.org/InStock',
-      ...(card.fees.annualFee !== undefined && {
-        price: card.fees.annualFee,
-        priceCurrency: 'SEK',
-      }),
+      priceCurrency: 'SEK',
+      price: '0',
     },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: card.editorRating,
-      bestRating: 5,
-      worstRating: 1,
-      reviewCount: 1,
-    },
+    ...(hasRating && {
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: card.editorRating,
+        bestRating: 5,
+        worstRating: 1,
+        reviewCount: 1,
+      },
+    }),
   }
 
   return (

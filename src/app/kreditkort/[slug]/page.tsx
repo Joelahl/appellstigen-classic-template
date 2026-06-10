@@ -2,22 +2,19 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { getCreditCard, getCreditCards } from '@/lib/payload'
+import { getCreditCard } from '@/lib/payload'
 import StarRating from '@/components/StarRating'
 import CreditCardSchema from '@/components/CreditCardSchema'
 import siteConfig from '@/siteConfig'
-import { formatCurrency, formatPercent } from '@/lib/utils'
 
 interface Props {
   params: Promise<{ slug: string }>
 }
 
-// Don't pre-render at build time — use ISR + on-demand generation instead.
-// This allows the site to build without a live CMS connection.
+// ISR + on-demand: build without a live CMS, render on first request.
 export const dynamicParams = true
-
 export async function generateStaticParams() {
-  return [] // Pages are rendered on first request and cached via ISR
+  return []
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -27,8 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const title = card.seo.metaTitle || `${card.cardName} — Recension & Omdöme`
   const description =
-    card.seo.metaDescription ||
-    `Läs vår recension av ${card.cardName}. Årsavgift: ${card.fees.annualFee !== undefined ? (card.fees.annualFee === 0 ? 'Gratis' : formatCurrency(card.fees.annualFee)) : '—'}. Betyg: ${card.editorRating}/5.`
+    card.seo.metaDescription || card.verdict || `Läs vår recension av ${card.cardName}.`
   const canonical = `https://${siteConfig.domain}/kreditkort/${slug}`
 
   return {
@@ -50,11 +46,28 @@ export default async function CardDetailPage({ params }: Props) {
   const card = await getCreditCard(slug)
   if (!card) notFound()
 
+  const allFacts: Array<[string, string | undefined]> = [
+    ['Årskostnad', card.fees.annualCost],
+    ['Maxkredit', card.fees.maxCredit],
+    ['Kreditränta', card.fees.interestRate],
+    ['Räntefri period', card.fees.interestFreePeriod],
+    ['Valutaavgift', card.fees.currencyFee],
+    ['Uttagsavgift', card.fees.withdrawalFee],
+    ['Aviavgift', card.fees.invoiceFee],
+    ['Påminnelseavgift', card.fees.reminderFee],
+    ['Övertrasseringsavgift', card.fees.overdraftFee],
+    ['Bonus', card.bonus],
+    ['Concierge', card.concierge],
+    ['Flyglounger', card.airportLounge],
+    ['Ålderskrav', card.eligibility.minAge],
+    ['Inkomstkrav', card.eligibility.minIncome],
+    ['Betalningsanmärkningar', card.eligibility.paymentRemarks],
+  ]
+  const facts = allFacts.filter(([, v]) => v)
+
   return (
     <>
       <CreditCardSchema card={card} />
-
-      {/* Breadcrumb */}
       <BreadcrumbSchema cardName={card.cardName} slug={slug} />
 
       <div className="mx-auto max-w-4xl px-4 py-10">
@@ -70,7 +83,6 @@ export default async function CardDetailPage({ params }: Props) {
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Main content */}
           <div className="lg:col-span-2">
-            {/* Header */}
             <header className="card p-6">
               <div className="flex items-start gap-5">
                 {card.cardImageUrl && (
@@ -85,16 +97,18 @@ export default async function CardDetailPage({ params }: Props) {
                   </div>
                 )}
                 <div>
-                  <p className="text-sm font-medium text-gray-500">{card.issuer}</p>
+                  {card.cardType && (
+                    <p className="text-sm font-medium text-gray-500">{card.cardType}</p>
+                  )}
                   <h1 className="text-2xl font-bold text-gray-900">{card.cardName}</h1>
-                  <div className="mt-1 flex items-center gap-2">
-                    <StarRating rating={card.editorRating} size="md" showLabel />
-                    {card.lastVerified && (
-                      <span className="text-xs text-gray-400">
-                        Verifierad {new Date(card.lastVerified).toLocaleDateString('sv-SE')}
-                      </span>
-                    )}
-                  </div>
+                  {typeof card.editorRating === 'number' && card.editorRating > 0 && (
+                    <div className="mt-1">
+                      <StarRating rating={card.editorRating} size="md" showLabel />
+                    </div>
+                  )}
+                  {card.bestFor && (
+                    <p className="mt-1 text-sm text-gray-500">Passar bra som: {card.bestFor}</p>
+                  )}
                 </div>
               </div>
 
@@ -105,75 +119,32 @@ export default async function CardDetailPage({ params }: Props) {
               )}
             </header>
 
-            {/* Key stats */}
-            <section className="mt-6 card p-6">
-              <h2 className="mb-4 text-lg font-semibold">Kortfakta</h2>
-              <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                <FactItem
-                  label="Årsavgift"
-                  value={
-                    card.fees.annualFee !== undefined
-                      ? card.fees.annualFee === 0
-                        ? 'Gratis'
-                        : formatCurrency(card.fees.annualFee)
-                      : '—'
-                  }
-                  note={card.fees.annualFeeNote}
-                />
-                <FactItem
-                  label="Kreditränta"
-                  value={card.fees.interestRate !== undefined ? formatPercent(card.fees.interestRate) : '—'}
-                />
-                <FactItem
-                  label="Räntefria dagar"
-                  value={card.fees.interestFreeDays ? `${card.fees.interestFreeDays} dagar` : '—'}
-                />
-                <FactItem
-                  label="Cashback"
-                  value={card.rewards.cashbackPercent !== undefined ? formatPercent(card.rewards.cashbackPercent) : '—'}
-                  note={card.rewards.cashbackNote}
-                />
-                <FactItem
-                  label="Välkomstbonus"
-                  value={card.rewards.welcomeBonus || '—'}
-                />
-                <FactItem
-                  label="Utlandsavgift"
-                  value={card.fees.foreignTransactionFee || '—'}
-                />
-                {card.creditLimit?.max && (
-                  <FactItem
-                    label="Kreditgräns"
-                    value={`upp till ${formatCurrency(card.creditLimit.max)}`}
-                  />
-                )}
-                <FactItem
-                  label="Lägsta ålder"
-                  value={`${card.eligibility.minAge} år`}
-                />
-                {card.eligibility.minIncome && (
-                  <FactItem
-                    label="Lägsta inkomst"
-                    value={formatCurrency(card.eligibility.minIncome) + '/år'}
-                  />
-                )}
-              </dl>
-            </section>
+            {/* Key facts */}
+            {facts.length > 0 && (
+              <section className="mt-6 card p-6">
+                <h2 className="mb-4 text-lg font-semibold">Kortfakta</h2>
+                <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                  {facts.map(([label, value]) => (
+                    <div key={label}>
+                      <dt className="text-xs text-gray-500">{label}</dt>
+                      <dd className="font-semibold text-gray-900">{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </section>
+            )}
 
-            {/* Insurance */}
-            <section className="mt-6 card p-6">
-              <h2 className="mb-4 text-lg font-semibold">Försäkringar</h2>
-              <ul className="space-y-2">
-                <InsuranceRow
-                  label="Reseförsäkring"
-                  active={card.insurance.travelInsurance}
-                  note={card.insurance.travelInsuranceNote}
-                />
-                <InsuranceRow label="Köpskydd" active={card.insurance.purchaseProtection} />
-                <InsuranceRow label="Avbeställningsskydd" active={card.insurance.cancellationProtection} />
-                <InsuranceRow label="Prisskydd" active={card.insurance.priceProtection} />
-              </ul>
-            </section>
+            {/* Features */}
+            {(card.applePay || card.googlePay || card.contactless) && (
+              <section className="mt-6 card p-6">
+                <h2 className="mb-4 text-lg font-semibold">Funktioner</h2>
+                <div className="flex flex-wrap gap-2">
+                  {card.applePay && <FeatureBadge label="Apple Pay" />}
+                  {card.googlePay && <FeatureBadge label="Google Pay" />}
+                  {card.contactless && <FeatureBadge label="Contactless" />}
+                </div>
+              </section>
+            )}
 
             {/* Pros & cons */}
             {(card.pros.length > 0 || card.cons.length > 0) && (
@@ -205,17 +176,13 @@ export default async function CardDetailPage({ params }: Props) {
               </section>
             )}
 
-            {/* Benefits */}
-            {card.benefits.length > 0 && (
+            {/* Full review (migrated HTML) */}
+            {card.reviewContent && (
               <section className="mt-6 card p-6">
-                <h2 className="mb-4 text-lg font-semibold">Förmåner</h2>
-                <ul className="grid gap-2 sm:grid-cols-2">
-                  {card.benefits.map((b, i) => (
-                    <li key={i} className="flex gap-2 text-sm text-gray-700">
-                      <span className="text-blue-500 shrink-0">→</span> {b}
-                    </li>
-                  ))}
-                </ul>
+                <article
+                  className="prose prose-sm max-w-none prose-headings:font-semibold prose-a:text-blue-700"
+                  dangerouslySetInnerHTML={{ __html: card.reviewContent }}
+                />
               </section>
             )}
           </div>
@@ -223,31 +190,31 @@ export default async function CardDetailPage({ params }: Props) {
           {/* Sidebar — sticky CTA */}
           <aside className="space-y-4">
             <div className="card sticky top-20 p-6 text-center">
-              <StarRating rating={card.editorRating} size="lg" showLabel />
-              <p className="mt-2 text-sm text-gray-500">Redaktörens betyg</p>
+              {typeof card.editorRating === 'number' && card.editorRating > 0 && (
+                <>
+                  <StarRating rating={card.editorRating} size="lg" showLabel />
+                  <p className="mt-2 text-sm text-gray-500">Redaktörens betyg</p>
+                  <div className="my-4 border-t border-gray-100" />
+                </>
+              )}
 
-              <div className="my-4 border-t border-gray-100" />
-
-              {card.fees.annualFee !== undefined && (
+              {card.fees.annualCost && (
                 <div className="mb-4">
-                  <p className="text-sm text-gray-500">Årsavgift</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {card.fees.annualFee === 0 ? 'Gratis' : formatCurrency(card.fees.annualFee)}
-                  </p>
-                  {card.fees.annualFeeNote && (
-                    <p className="text-xs text-gray-400">{card.fees.annualFeeNote}</p>
-                  )}
+                  <p className="text-sm text-gray-500">Årskostnad</p>
+                  <p className="text-2xl font-bold text-gray-900">{card.fees.annualCost}</p>
                 </div>
               )}
 
-              <a
-                href={card.affiliateLink}
-                target="_blank"
-                rel="noopener noreferrer nofollow sponsored"
-                className="btn-primary w-full text-center block"
-              >
-                {card.ctaText}
-              </a>
+              {card.affiliateLink && (
+                <a
+                  href={card.affiliateLink}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow sponsored"
+                  className="btn-primary w-full text-center block"
+                >
+                  {card.ctaText}
+                </a>
+              )}
 
               <p className="mt-3 text-xs text-gray-400">
                 Du lämnar vår sajt. Vi kan få ersättning om du ansöker.
@@ -260,27 +227,11 @@ export default async function CardDetailPage({ params }: Props) {
   )
 }
 
-function FactItem({ label, value, note }: { label: string; value: string; note?: string }) {
+function FeatureBadge({ label }: { label: string }) {
   return (
-    <div>
-      <dt className="text-xs text-gray-500">{label}</dt>
-      <dd className="font-semibold text-gray-900">{value}</dd>
-      {note && <p className="text-xs text-gray-400">{note}</p>}
-    </div>
-  )
-}
-
-function InsuranceRow({ label, active, note }: { label: string; active: boolean; note?: string }) {
-  return (
-    <li className="flex items-start gap-3 text-sm">
-      <span className={active ? 'text-green-500 font-bold' : 'text-gray-300 font-bold'}>
-        {active ? '✓' : '✗'}
-      </span>
-      <span className={active ? 'text-gray-800' : 'text-gray-400'}>
-        {label}
-        {note && <span className="ml-1 text-gray-500">({note})</span>}
-      </span>
-    </li>
+    <span className="inline-flex items-center rounded-full bg-green-50 px-3 py-1 text-sm font-medium text-green-700 ring-1 ring-green-200">
+      ✓ {label}
+    </span>
   )
 }
 
@@ -289,18 +240,8 @@ function BreadcrumbSchema({ cardName, slug }: { cardName: string; slug: string }
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      {
-        '@type': 'ListItem',
-        position: 1,
-        name: 'Hem',
-        item: `https://${siteConfig.domain}`,
-      },
-      {
-        '@type': 'ListItem',
-        position: 2,
-        name: 'Kreditkort',
-        item: `https://${siteConfig.domain}`,
-      },
+      { '@type': 'ListItem', position: 1, name: 'Hem', item: `https://${siteConfig.domain}` },
+      { '@type': 'ListItem', position: 2, name: 'Kreditkort', item: `https://${siteConfig.domain}` },
       {
         '@type': 'ListItem',
         position: 3,
@@ -310,9 +251,6 @@ function BreadcrumbSchema({ cardName, slug }: { cardName: string; slug: string }
     ],
   }
   return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-    />
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
   )
 }

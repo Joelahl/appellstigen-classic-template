@@ -1,7 +1,6 @@
-import type { CreditCard } from '@/types'
+import type { CreditCard, Page } from '@/types'
 
 const CMS_URL = process.env.PAYLOAD_CMS_URL || 'http://localhost:3001'
-const SITE_ID = process.env.NEXT_PUBLIC_SITE_ID || 'basta-kreditkort'
 const API_KEY = process.env.PAYLOAD_API_KEY || ''
 
 const headers: Record<string, string> = {
@@ -19,101 +18,147 @@ async function fetchFromCMS<T>(path: string, options?: RequestInit): Promise<T> 
     if (!res.ok) throw new Error(`CMS fetch failed: ${res.status} ${path}`)
     return res.json() as Promise<T>
   } catch (err) {
-    // During build the CMS may not be reachable — return empty data gracefully
     console.warn(`CMS unavailable (${CMS_URL}): ${err}`)
     return { docs: [], totalDocs: 0 } as unknown as T
   }
 }
 
+/** Resolve a media/upload field or string into an absolute URL. */
+function resolveImage(val: unknown): string | undefined {
+  if (!val) return undefined
+  if (typeof val === 'string') {
+    return val.startsWith('http') ? val : `${CMS_URL}${val}`
+  }
+  const obj = val as Record<string, unknown>
+  const url = obj.url as string | undefined
+  if (url) return url.startsWith('http') ? url : `${CMS_URL}${url}`
+  return undefined
+}
+
 function mapCard(raw: Record<string, unknown>): CreditCard {
   const fees = (raw.fees as Record<string, unknown>) || {}
-  const rewards = (raw.rewards as Record<string, unknown>) || {}
-  const insurance = (raw.insurance as Record<string, unknown>) || {}
   const eligibility = (raw.eligibility as Record<string, unknown>) || {}
-  const creditLimit = (raw.creditLimit as Record<string, unknown>) || {}
+  const ratings = (raw.ratings as Record<string, unknown>) || {}
   const seo = (raw.seo as Record<string, unknown>) || {}
-  const benefits = ((raw.benefits as Array<{ benefit: string }>) || []).map((b) => b.benefit)
-  const pros = ((raw.pros as Array<{ item: string }>) || []).map((p) => p.item)
-  const cons = ((raw.cons as Array<{ item: string }>) || []).map((c) => c.item)
+  const pros = ((raw.pros as Array<{ item: string }>) || []).map((p) => p.item).filter(Boolean)
+  const cons = ((raw.cons as Array<{ item: string }>) || []).map((c) => c.item).filter(Boolean)
 
-  const cardImage = raw.cardImage as Record<string, unknown> | null
-  const ogImage = seo.ogImage as Record<string, unknown> | null
+  // Prefer an uploaded media image; fall back to the migrated remote URL.
+  const cardImageUrl = resolveImage(raw.cardImage) || resolveImage(raw.cardImageUrl)
 
   return {
-    id: raw.id as string,
+    id: String(raw.id),
     cardName: raw.cardName as string,
     slug: raw.slug as string,
-    issuer: raw.issuer as string,
-    cardImageUrl: cardImage ? (`${CMS_URL}${cardImage.url}` as string) : undefined,
+    issuer: raw.issuer as string | undefined,
+    cardType: raw.cardType as string | undefined,
+    cardImageUrl,
     featured: Boolean(raw.featured),
+    bestFor: raw.bestFor as string | undefined,
+    description: raw.description as string | undefined,
+    editorRating: raw.editorRating as number | undefined,
+    ratings: {
+      bonus: ratings.bonus as number | undefined,
+      insurance: ratings.insurance as number | undefined,
+      creditTerms: ratings.creditTerms as number | undefined,
+      fees: ratings.fees as number | undefined,
+    },
     fees: {
-      annualFee: fees.annualFee as number | undefined,
-      annualFeeNote: fees.annualFeeNote as string | undefined,
-      interestRate: fees.interestRate as number | undefined,
-      interestFreeDays: fees.interestFreedays as number | undefined,
+      annualCost: fees.annualCost as string | undefined,
+      maxCredit: fees.maxCredit as string | undefined,
+      interestRate: fees.interestRate as string | undefined,
+      interestFreePeriod: fees.interestFreePeriod as string | undefined,
+      currencyFee: fees.currencyFee as string | undefined,
       withdrawalFee: fees.withdrawalFee as string | undefined,
-      foreignTransactionFee: fees.foreignTransactionFee as string | undefined,
-    },
-    creditLimit: {
-      min: creditLimit.min as number | undefined,
-      max: creditLimit.max as number | undefined,
-    },
-    rewards: {
-      welcomeBonus: rewards.welcomeBonus as string | undefined,
-      cashbackPercent: rewards.cashbackPercent as number | undefined,
-      cashbackNote: rewards.cashbackNote as string | undefined,
-      pointsProgram: rewards.pointsProgram as string | undefined,
-    },
-    benefits,
-    insurance: {
-      travelInsurance: Boolean(insurance.travelInsurance),
-      travelInsuranceNote: insurance.travelInsuranceNote as string | undefined,
-      purchaseProtection: Boolean(insurance.purchaseProtection),
-      cancellationProtection: Boolean(insurance.cancellationProtection),
-      priceProtection: Boolean(insurance.priceProtection),
+      invoiceFee: fees.invoiceFee as string | undefined,
+      reminderFee: fees.reminderFee as string | undefined,
+      overdraftFee: fees.overdraftFee as string | undefined,
     },
     eligibility: {
-      minAge: (eligibility.minAge as number) || 18,
-      minIncome: eligibility.minIncome as number | undefined,
-      requiresSwedishResident: Boolean(eligibility.requiresSwedishResident),
+      minAge: eligibility.minAge as string | undefined,
+      minIncome: eligibility.minIncome as string | undefined,
+      paymentRemarks: eligibility.paymentRemarks as string | undefined,
     },
-    editorRating: raw.editorRating as number,
+    termsText: raw.termsText as string | undefined,
+    bonus: raw.bonus as string | undefined,
+    concierge: raw.concierge as string | undefined,
+    airportLounge: raw.airportLounge as string | undefined,
     pros,
     cons,
+    applePay: Boolean(raw.applePay),
+    googlePay: Boolean(raw.googlePay),
+    contactless: Boolean(raw.contactless),
     verdict: raw.verdict as string | undefined,
-    affiliateLink: raw.affiliateLink as string,
+    reviewContent: raw.reviewContent as string | undefined,
+    screenshotUrl: resolveImage(raw.screenshotUrl),
+    affiliateLink: raw.affiliateLink as string | undefined,
     ctaText: (raw.ctaText as string) || 'Ansök nu',
-    sortOrder: (raw.sortOrder as number) || 100,
     seo: {
       metaTitle: seo.metaTitle as string | undefined,
       metaDescription: seo.metaDescription as string | undefined,
-      ogImageUrl: ogImage ? (`${CMS_URL}${ogImage.url}` as string) : undefined,
+      ogImageUrl: resolveImage(seo.ogImageUrl),
     },
+    sortOrder: (raw.sortOrder as number) ?? 100,
     lastVerified: raw.lastVerified as string | undefined,
   }
 }
 
+function mapPage(raw: Record<string, unknown>): Page {
+  const seo = (raw.seo as Record<string, unknown>) || {}
+  return {
+    id: String(raw.id),
+    title: raw.title as string,
+    slug: raw.slug as string,
+    pageType: (raw.pageType as Page['pageType']) || 'other',
+    menuOrder: (raw.menuOrder as number) ?? 0,
+    excerpt: raw.excerpt as string | undefined,
+    content: raw.content as string | undefined,
+    seo: {
+      metaTitle: seo.metaTitle as string | undefined,
+      metaDescription: seo.metaDescription as string | undefined,
+      ogImageUrl: resolveImage(seo.ogImageUrl),
+    },
+  }
+}
+
+// ── Credit cards ────────────────────────────────────────────────────────────
 export async function getCreditCards(): Promise<CreditCard[]> {
-  type Response = { docs: Record<string, unknown>[]; totalDocs: number }
-  const data = await fetchFromCMS<Response>(
-    `/credit-cards?where[site.siteId][equals]=${SITE_ID}&where[status][equals]=published&sort=sortOrder&limit=100`,
+  type Res = { docs: Record<string, unknown>[] }
+  const data = await fetchFromCMS<Res>(
+    `/credit-cards?where[status][equals]=published&sort=sortOrder&limit=100&depth=1`,
   )
   return data.docs.map(mapCard)
 }
 
 export async function getCreditCard(slug: string): Promise<CreditCard | null> {
-  type Response = { docs: Record<string, unknown>[] }
-  const data = await fetchFromCMS<Response>(
-    `/credit-cards?where[slug][equals]=${slug}&where[site.siteId][equals]=${SITE_ID}&limit=1`,
+  type Res = { docs: Record<string, unknown>[] }
+  const data = await fetchFromCMS<Res>(
+    `/credit-cards?where[slug][equals]=${encodeURIComponent(slug)}&limit=1&depth=1`,
   )
-  if (!data.docs.length) return null
-  return mapCard(data.docs[0])
+  return data.docs.length ? mapCard(data.docs[0]) : null
 }
 
 export async function getFeaturedCards(limit = 3): Promise<CreditCard[]> {
-  type Response = { docs: Record<string, unknown>[] }
-  const data = await fetchFromCMS<Response>(
-    `/credit-cards?where[site.siteId][equals]=${SITE_ID}&where[status][equals]=published&where[featured][equals]=true&sort=sortOrder&limit=${limit}`,
+  type Res = { docs: Record<string, unknown>[] }
+  const data = await fetchFromCMS<Res>(
+    `/credit-cards?where[status][equals]=published&where[featured][equals]=true&sort=sortOrder&limit=${limit}&depth=1`,
   )
   return data.docs.map(mapCard)
+}
+
+// ── Pages ───────────────────────────────────────────────────────────────────
+export async function getPages(): Promise<Page[]> {
+  type Res = { docs: Record<string, unknown>[] }
+  const data = await fetchFromCMS<Res>(
+    `/pages?where[status][equals]=published&sort=menuOrder&limit=100&depth=0`,
+  )
+  return data.docs.map(mapPage)
+}
+
+export async function getPage(slug: string): Promise<Page | null> {
+  type Res = { docs: Record<string, unknown>[] }
+  const data = await fetchFromCMS<Res>(
+    `/pages?where[slug][equals]=${encodeURIComponent(slug)}&where[status][equals]=published&limit=1&depth=0`,
+  )
+  return data.docs.length ? mapPage(data.docs[0]) : null
 }

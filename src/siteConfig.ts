@@ -27,7 +27,10 @@ const siteConfig: SiteConfig = {
 
   navigation: [
     { label: 'Jämför kort', href: '/' },
-    { label: 'Guider', href: '/guider' },
+    { label: 'Bonus', href: '/kreditkort-med-bonus' },
+    { label: 'Cashback', href: '/cashback' },
+    { label: 'Låg ränta', href: '/kreditkort-med-lag-ranta' },
+    { label: 'Billiga', href: '/billiga-kreditkort' },
     { label: 'Om oss', href: '/om-oss' },
   ],
 

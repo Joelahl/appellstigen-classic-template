@@ -17,52 +17,86 @@ export interface SiteConfig {
   navigation: Array<{ label: string; href: string }>
 }
 
+/**
+ * CreditCard — mirrors the global CreditCards collection in the CMS.
+ * Fee/rate values are strings (e.g. "0 kr", "21,40 %") to preserve source
+ * formatting from the migrated WordPress data.
+ */
 export interface CreditCard {
   id: string
   cardName: string
   slug: string
-  issuer: string
+  issuer?: string
+  cardType?: string
   cardImageUrl?: string
   featured: boolean
+  bestFor?: string
+  description?: string
+
+  editorRating?: number
+  ratings?: {
+    bonus?: number
+    insurance?: number
+    creditTerms?: number
+    fees?: number
+  }
+
   fees: {
-    annualFee?: number
-    annualFeeNote?: string
-    interestRate?: number
-    interestFreeDays?: number
+    annualCost?: string
+    maxCredit?: string
+    interestRate?: string
+    interestFreePeriod?: string
+    currencyFee?: string
     withdrawalFee?: string
-    foreignTransactionFee?: string
-  }
-  creditLimit?: { min?: number; max?: number }
-  rewards: {
-    welcomeBonus?: string
-    cashbackPercent?: number
-    cashbackNote?: string
-    pointsProgram?: string
-  }
-  benefits: string[]
-  insurance: {
-    travelInsurance: boolean
-    travelInsuranceNote?: string
-    purchaseProtection: boolean
-    cancellationProtection: boolean
-    priceProtection: boolean
+    invoiceFee?: string
+    reminderFee?: string
+    overdraftFee?: string
   }
   eligibility: {
-    minAge: number
-    minIncome?: number
-    requiresSwedishResident: boolean
+    minAge?: string
+    minIncome?: string
+    paymentRemarks?: string
   }
-  editorRating: number
+  termsText?: string
+
+  bonus?: string
+  concierge?: string
+  airportLounge?: string
   pros: string[]
   cons: string[]
+
+  applePay: boolean
+  googlePay: boolean
+  contactless: boolean
+
   verdict?: string
-  affiliateLink: string
+  reviewContent?: string
+  screenshotUrl?: string
+
+  affiliateLink?: string
   ctaText: string
-  sortOrder: number
+
   seo: {
     metaTitle?: string
     metaDescription?: string
     ogImageUrl?: string
   }
+  sortOrder?: number
   lastVerified?: string
+}
+
+/** Page — mirrors the Pages collection (homepage, category, info, legal). */
+export interface Page {
+  id: string
+  title: string
+  slug: string
+  pageType: 'homepage' | 'category' | 'info' | 'legal' | 'other'
+  menuOrder: number
+  excerpt?: string
+  content?: string
+  seo: {
+    metaTitle?: string
+    metaDescription?: string
+    ogImageUrl?: string
+  }
 }

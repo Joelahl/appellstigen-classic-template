@@ -2,7 +2,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import type { CreditCard } from '@/types'
 import StarRating from './StarRating'
-import { formatCurrency, formatPercent } from '@/lib/utils'
 
 interface Props {
   card: CreditCard
@@ -23,7 +22,6 @@ export default function CreditCardCard({ card, rank }: Props) {
       )}
 
       <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
-        {/* Rank */}
         {rank && (
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-700 text-sm font-bold text-white">
             {rank}
@@ -42,85 +40,61 @@ export default function CreditCardCard({ card, rank }: Props) {
               itemProp="image"
             />
           ) : (
-            <div className="text-center text-xs text-gray-400">{card.issuer}</div>
+            <div className="text-center text-xs text-gray-400">{card.issuer || card.cardName}</div>
           )}
         </div>
 
         {/* Name & rating */}
         <div className="flex-1">
-          <p className="text-xs font-medium uppercase tracking-wider text-gray-400" itemProp="brand">
-            {card.issuer}
-          </p>
+          {card.cardType && (
+            <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
+              {card.cardType}
+            </p>
+          )}
           <h2 className="text-lg font-bold text-gray-900" itemProp="name">
             <Link href={`/kreditkort/${card.slug}`} className="hover:text-blue-700">
               {card.cardName}
             </Link>
           </h2>
-          <StarRating rating={card.editorRating} size="sm" showLabel />
+          {typeof card.editorRating === 'number' && card.editorRating > 0 && (
+            <StarRating rating={card.editorRating} size="sm" showLabel />
+          )}
+          {card.bestFor && <p className="mt-0.5 text-xs text-gray-500">{card.bestFor}</p>}
         </div>
 
-        {/* Key stats */}
-        <div className="grid grid-cols-3 gap-4 sm:grid-cols-3">
-          <Stat
-            label="Årsavgift"
-            value={
-              card.fees.annualFee !== undefined
-                ? card.fees.annualFee === 0
-                  ? 'Gratis'
-                  : formatCurrency(card.fees.annualFee)
-                : '—'
-            }
-            note={card.fees.annualFeeNote}
-          />
-          <Stat
-            label="Ränta"
-            value={
-              card.fees.interestRate !== undefined
-                ? formatPercent(card.fees.interestRate)
-                : '—'
-            }
-          />
-          <Stat
-            label="Cashback"
-            value={
-              card.rewards.cashbackPercent !== undefined
-                ? formatPercent(card.rewards.cashbackPercent)
-                : card.rewards.welcomeBonus
-                  ? 'Bonus'
-                  : '—'
-            }
-            note={card.rewards.cashbackNote || card.rewards.welcomeBonus}
-          />
+        {/* Key stats (text values from CMS) */}
+        <div className="grid grid-cols-3 gap-4">
+          <Stat label="Årskostnad" value={card.fees.annualCost} />
+          <Stat label="Ränta" value={card.fees.interestRate} />
+          <Stat label="Bonus" value={card.bonus} />
         </div>
 
-        {/* Insurance badges */}
+        {/* Feature badges */}
         <div className="flex flex-wrap gap-1.5">
-          {card.insurance.travelInsurance && <Badge label="Reseförsäkring" />}
-          {card.insurance.purchaseProtection && <Badge label="Köpskydd" />}
-          {card.insurance.cancellationProtection && <Badge label="Avbeställning" />}
+          {card.applePay && <Badge label="Apple Pay" />}
+          {card.googlePay && <Badge label="Google Pay" />}
+          {card.contactless && <Badge label="Contactless" />}
         </div>
 
         {/* CTA */}
         <div className="flex flex-col items-center gap-2">
-          <a
-            href={card.affiliateLink}
-            target="_blank"
-            rel="noopener noreferrer nofollow sponsored"
-            className="btn-primary w-full text-center"
-            aria-label={`Ansök om ${card.cardName}`}
-          >
-            {card.ctaText}
-          </a>
-          <Link
-            href={`/kreditkort/${card.slug}`}
-            className="text-xs text-blue-600 hover:underline"
-          >
+          {card.affiliateLink && (
+            <a
+              href={card.affiliateLink}
+              target="_blank"
+              rel="noopener noreferrer nofollow sponsored"
+              className="btn-primary w-full text-center"
+              aria-label={`Ansök om ${card.cardName}`}
+            >
+              {card.ctaText}
+            </a>
+          )}
+          <Link href={`/kreditkort/${card.slug}`} className="text-xs text-blue-600 hover:underline">
             Läs recension →
           </Link>
         </div>
       </div>
 
-      {/* Verdict */}
       {card.verdict && (
         <div className="border-t border-gray-100 bg-gray-50 px-5 py-3 text-sm text-gray-600 italic">
           {card.verdict}
@@ -130,12 +104,11 @@ export default function CreditCardCard({ card, rank }: Props) {
   )
 }
 
-function Stat({ label, value, note }: { label: string; value: string; note?: string }) {
+function Stat({ label, value }: { label: string; value?: string }) {
   return (
     <div className="text-center">
       <p className="text-xs text-gray-500">{label}</p>
-      <p className="font-semibold text-gray-900">{value}</p>
-      {note && <p className="text-xs text-gray-400 truncate max-w-[100px]" title={note}>{note}</p>}
+      <p className="font-semibold text-gray-900">{value || '—'}</p>
     </div>
   )
 }

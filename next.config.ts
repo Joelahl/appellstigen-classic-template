@@ -6,7 +6,12 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: process.env.CMS_HOSTNAME || 'cms.example.com',
+        hostname: process.env.CMS_HOSTNAME || 'cms.tacotech.se',
+      },
+      // Migrated card/page images still hosted on the legacy WordPress site
+      {
+        protocol: 'https',
+        hostname: 'xn--bstkreditkort-bfb.nu',
       },
       {
         protocol: 'http',
