@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { getCreditCards, getSite, getAuthors, getPages } from '@/lib/payload'
 import CreditCardCard from '@/components/CreditCardCard'
 import { AuthorsSection } from '@/components/Author'
@@ -18,10 +19,10 @@ export const metadata: Metadata = {
 }
 
 const FEATURES = [
-  { icon: '💳', title: 'Bonuskort', desc: 'Tjäna pengar på dina köp' },
-  { icon: '💰', title: 'Cashback', desc: 'Få tillbaka på allt du handlar' },
-  { icon: '📉', title: 'Låg ränta', desc: 'Kort med fördelaktiga villkor' },
-  { icon: '🎁', title: 'Utan avgift', desc: 'Gratis kort utan årsavgift' },
+  { icon: '💳', title: 'Bonuskort', desc: 'Tjäna pengar på dina köp', href: '/kreditkort-med-bonus' },
+  { icon: '💰', title: 'Cashback', desc: 'Få tillbaka på allt du handlar', href: '/cashback' },
+  { icon: '📉', title: 'Låg ränta', desc: 'Kort med fördelaktiga villkor', href: '/kreditkort-med-lag-ranta' },
+  { icon: '🎁', title: 'Billiga kort', desc: 'Kort utan eller med låg avgift', href: '/billiga-kreditkort' },
 ]
 
 export default async function HomePage() {
@@ -36,6 +37,8 @@ export default async function HomePage() {
   const sorted = [...featured, ...cards.filter((c) => !c.featured)]
   const home = pages.find((p) => p.pageType === 'homepage')
   const hero = site?.branding?.heroImageUrl
+  const tagline = site?.branding?.tagline || 'Hitta det bästa kreditkortet för dig'
+  const [taglineFirst, ...taglineRest] = tagline.split(' ')
 
   return (
     <>
@@ -47,7 +50,8 @@ export default async function HomePage() {
         {hero && <div className="absolute inset-0 bg-blue-900/70" />}
         <div className="relative mx-auto max-w-3xl px-4 text-center">
           <h1 className="text-4xl font-bold sm:text-5xl">
-            {site?.branding?.tagline || 'Hitta det bästa kreditkortet för dig'}
+            <span style={{ color: 'var(--brand-accent, #f59e0b)' }}>{taglineFirst}</span>{' '}
+            {taglineRest.join(' ')}
           </h1>
           <p className="mt-4 text-lg text-blue-100">
             Vi jämför {cards.length} kreditkort efter avgift, ränta, bonus och försäkringar.
@@ -55,15 +59,25 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Feature cards */}
+      {/* Feature cards — clickable category groups */}
       <section className="mx-auto -mt-8 max-w-6xl px-4">
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {FEATURES.map((f) => (
-            <div key={f.title} className="rounded-xl border border-gray-100 bg-white p-5 text-center shadow-sm">
+            <Link
+              key={f.title}
+              href={f.href}
+              className="group rounded-xl border border-gray-100 bg-white p-5 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md"
+            >
               <div className="text-3xl">{f.icon}</div>
-              <p className="mt-2 font-semibold text-gray-900">{f.title}</p>
+              <p className="mt-2 font-semibold text-gray-900 group-hover:text-blue-700">{f.title}</p>
               <p className="text-sm text-gray-500">{f.desc}</p>
-            </div>
+              <span
+                className="mt-3 inline-block text-sm font-medium"
+                style={{ color: 'var(--brand, #1d4ed8)' }}
+              >
+                Se korten →
+              </span>
+            </Link>
           ))}
         </div>
       </section>

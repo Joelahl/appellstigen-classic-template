@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { getPage } from '@/lib/payload'
+import { getPage, getSite } from '@/lib/payload'
 import RenderBlocks from '@/components/RenderBlocks'
 import CreditCardCard from '@/components/CreditCardCard'
 import { AuthorByline, AuthorBio } from '@/components/Author'
@@ -39,26 +39,50 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function GenericPage({ params }: Props) {
   const { slug } = await params
-  const page = await getPage(slug)
+  const [page, site] = await Promise.all([getPage(slug), getSite()])
   if (!page) notFound()
 
   const isCategory = page.pageType === 'category'
   const toplist = page.toplistCards || []
+  const heroImg = site?.branding?.heroImageUrl
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10">
-      {/* Header section with byline + last updated */}
-      <header className="border-b border-gray-100 pb-6">
-        <h1 className="text-3xl font-bold text-gray-900">{page.title}</h1>
-        {page.excerpt && <p className="mt-2 max-w-3xl text-gray-600">{page.excerpt}</p>}
-        <div className="mt-4">
-          <AuthorByline author={page.author} updatedAt={page.updatedAt} />
-        </div>
-      </header>
+    <>
+      {/* Distinct hero banner — category pages get a prominent themed banner */}
+      {isCategory ? (
+        <section
+          className="relative overflow-hidden text-white"
+          style={{
+            background: 'linear-gradient(135deg, var(--brand,#1d4ed8), #1e3a8a)',
+            ...(heroImg ? { backgroundImage: `url(${heroImg})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}),
+          }}
+        >
+          {heroImg && <div className="absolute inset-0 bg-blue-900/75" />}
+          <div className="relative mx-auto max-w-5xl px-4 py-14">
+            <p className="text-sm font-medium uppercase tracking-wider" style={{ color: 'var(--brand-accent,#f59e0b)' }}>
+              Jämförelse
+            </p>
+            <h1 className="mt-1 text-3xl font-bold sm:text-4xl">{page.title}</h1>
+            {page.excerpt && <p className="mt-3 max-w-2xl text-blue-100">{page.excerpt}</p>}
+            <div className="mt-5 [&_*]:!text-blue-100 [&_.font-medium]:!text-white">
+              <AuthorByline author={page.author} updatedAt={page.updatedAt} />
+            </div>
+          </div>
+        </section>
+      ) : (
+        <header className="mx-auto max-w-5xl border-b border-gray-100 px-4 pb-6 pt-10">
+          <h1 className="text-3xl font-bold text-gray-900">{page.title}</h1>
+          {page.excerpt && <p className="mt-2 max-w-3xl text-gray-600">{page.excerpt}</p>}
+          <div className="mt-4">
+            <AuthorByline author={page.author} updatedAt={page.updatedAt} />
+          </div>
+        </header>
+      )}
 
+      <div className="mx-auto max-w-5xl px-4 py-10">
       {/* Category extras: best-card box, toplist, comparison table */}
       {isCategory && (
-        <div className="mt-8 space-y-10">
+        <div className="space-y-10">
           {page.bestCard && (
             <BestCardBox card={page.bestCard} summary={page.bestCardSummary} categoryTitle={page.title} />
           )}
@@ -92,6 +116,7 @@ export default async function GenericPage({ params }: Props) {
 
       {/* Author bio footer */}
       <AuthorBio author={page.author} />
-    </div>
+      </div>
+    </>
   )
 }
