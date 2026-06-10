@@ -1,19 +1,28 @@
 import type { CreditCard, Page } from '@/types'
+import { draftMode } from 'next/headers'
 
 const CMS_URL = process.env.PAYLOAD_CMS_URL || 'http://localhost:3001'
 const API_KEY = process.env.PAYLOAD_API_KEY || ''
 
-const headers: Record<string, string> = {
-  'Content-Type': 'application/json',
-}
-if (API_KEY) headers['Authorization'] = `Bearer ${API_KEY}`
-
-async function fetchFromCMS<T>(path: string, options?: RequestInit): Promise<T> {
+/** Is the current request in Next draft-mode preview? */
+async function isPreview(): Promise<boolean> {
   try {
-    const res = await fetch(`${CMS_URL}/api${path}`, {
-      ...options,
+    return (await draftMode()).isEnabled
+  } catch {
+    return false
+  }
+}
+
+async function fetchFromCMS<T>(path: string, draft = false): Promise<T> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  // In preview, authenticate with the Payload API key to read draft versions.
+  if (draft && API_KEY) headers['Authorization'] = `users API-Key ${API_KEY}`
+  const url = `${CMS_URL}/api${path}${draft ? '&draft=true' : ''}`
+  try {
+    const res = await fetch(url, {
       headers,
-      next: { revalidate: 300 }, // 5-minute ISR
+      // Drafts must never be cached; published content uses 5-min ISR.
+      ...(draft ? { cache: 'no-store' as RequestCache } : { next: { revalidate: 300 } }),
     })
     if (!res.ok) throw new Error(`CMS fetch failed: ${res.status} ${path}`)
     return res.json() as Promise<T>
@@ -122,26 +131,34 @@ function mapPage(raw: Record<string, unknown>): Page {
 }
 
 // ── Credit cards ────────────────────────────────────────────────────────────
+// Draft visibility is governed by Payload's native drafts: published versions
+// are returned to everyone; drafts only in preview (draft=true + API key).
 export async function getCreditCards(): Promise<CreditCard[]> {
   type Res = { docs: Record<string, unknown>[] }
+  const draft = await isPreview()
   const data = await fetchFromCMS<Res>(
-    `/credit-cards?where[status][equals]=published&sort=sortOrder&limit=100&depth=1`,
+    `/credit-cards?sort=sortOrder&limit=100&depth=1`,
+    draft,
   )
   return data.docs.map(mapCard)
 }
 
 export async function getCreditCard(slug: string): Promise<CreditCard | null> {
   type Res = { docs: Record<string, unknown>[] }
+  const draft = await isPreview()
   const data = await fetchFromCMS<Res>(
     `/credit-cards?where[slug][equals]=${encodeURIComponent(slug)}&limit=1&depth=1`,
+    draft,
   )
   return data.docs.length ? mapCard(data.docs[0]) : null
 }
 
 export async function getFeaturedCards(limit = 3): Promise<CreditCard[]> {
   type Res = { docs: Record<string, unknown>[] }
+  const draft = await isPreview()
   const data = await fetchFromCMS<Res>(
-    `/credit-cards?where[status][equals]=published&where[featured][equals]=true&sort=sortOrder&limit=${limit}&depth=1`,
+    `/credit-cards?where[featured][equals]=true&sort=sortOrder&limit=${limit}&depth=1`,
+    draft,
   )
   return data.docs.map(mapCard)
 }
@@ -149,16 +166,17 @@ export async function getFeaturedCards(limit = 3): Promise<CreditCard[]> {
 // ── Pages ───────────────────────────────────────────────────────────────────
 export async function getPages(): Promise<Page[]> {
   type Res = { docs: Record<string, unknown>[] }
-  const data = await fetchFromCMS<Res>(
-    `/pages?where[status][equals]=published&sort=menuOrder&limit=100&depth=0`,
-  )
+  const draft = await isPreview()
+  const data = await fetchFromCMS<Res>(`/pages?sort=menuOrder&limit=100&depth=0`, draft)
   return data.docs.map(mapPage)
 }
 
 export async function getPage(slug: string): Promise<Page | null> {
   type Res = { docs: Record<string, unknown>[] }
+  const draft = await isPreview()
   const data = await fetchFromCMS<Res>(
-    `/pages?where[slug][equals]=${encodeURIComponent(slug)}&where[status][equals]=published&limit=1&depth=0`,
+    `/pages?where[slug][equals]=${encodeURIComponent(slug)}&limit=1&depth=0`,
+    draft,
   )
   return data.docs.length ? mapPage(data.docs[0]) : null
 }
