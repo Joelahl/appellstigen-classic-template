@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { getCreditCards, getSite, getAuthors, getPages } from '@/lib/payload'
 import CreditCardCard from '@/components/CreditCardCard'
 import { AuthorsSection } from '@/components/Author'
+import Breadcrumbs from '@/components/Breadcrumbs'
 import siteConfig from '@/siteConfig'
 
 export const revalidate = 300
@@ -42,9 +43,10 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Hero — site-themed, bright faded background with dark text */}
+      {/* Hero — site-themed, bright faded background with dark text.
+          Background extends up behind the (overlay) navigation. */}
       <section
-        className="relative overflow-hidden py-16 text-gray-900"
+        className="relative overflow-hidden pb-14 pt-28 text-gray-900"
         style={{
           background: hero
             ? undefined
@@ -53,8 +55,9 @@ export default async function HomePage() {
         }}
       >
         {hero && <div className="absolute inset-0 bg-white/65" />}
-        <div className="relative mx-auto max-w-4xl px-4 text-left">
-          <h1 className="text-4xl font-bold sm:text-5xl">
+        <div className="relative mx-auto max-w-6xl px-4 text-left">
+          <Breadcrumbs items={[]} />
+          <h1 className="mt-3 text-4xl font-bold sm:text-5xl">
             <span style={{ color: 'var(--brand-accent, #f59e0b)' }}>{taglineFirst}</span>{' '}
             {taglineRest.join(' ')}
           </h1>
@@ -71,7 +74,7 @@ export default async function HomePage() {
             <Link
               key={f.title}
               href={f.href}
-              className="group rounded-xl border border-gray-100 bg-white p-5 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md"
+              className="group rounded-xl bg-white p-5 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
             >
               <div className="text-3xl">{f.icon}</div>
               <p className="mt-2 font-semibold text-gray-900 group-hover:text-blue-700">{f.title}</p>

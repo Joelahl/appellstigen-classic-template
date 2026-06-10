@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getPage, getSite } from '@/lib/payload'
 import RenderBlocks from '@/components/RenderBlocks'
+import Breadcrumbs from '@/components/Breadcrumbs'
 import CreditCardCard from '@/components/CreditCardCard'
 import { AuthorByline, AuthorBio } from '@/components/Author'
 import { BestCardBox, ComparisonTable } from '@/components/CategoryParts'
@@ -60,8 +61,9 @@ export default async function GenericPage({ params }: Props) {
           }}
         >
           {heroImg && <div className="absolute inset-0 bg-white/70" />}
-          <div className="relative mx-auto max-w-5xl px-4 py-14">
-            <p className="text-sm font-medium uppercase tracking-wider" style={{ color: 'var(--brand-accent,#f59e0b)' }}>
+          <div className="relative mx-auto max-w-6xl px-4 pb-12 pt-28">
+            <Breadcrumbs items={[{ label: page.title }]} />
+            <p className="mt-3 text-sm font-medium uppercase tracking-wider" style={{ color: 'var(--brand-accent,#f59e0b)' }}>
               Jämförelse
             </p>
             <h1 className="mt-1 text-3xl font-bold sm:text-4xl">{page.title}</h1>
@@ -72,8 +74,9 @@ export default async function GenericPage({ params }: Props) {
           </div>
         </section>
       ) : (
-        <header className="mx-auto max-w-5xl border-b border-gray-100 px-4 pb-6 pt-10">
-          <h1 className="text-3xl font-bold text-gray-900">{page.title}</h1>
+        <header className="mx-auto max-w-5xl px-4 pb-6 pt-28">
+          <Breadcrumbs items={[{ label: page.title }]} />
+          <h1 className="mt-3 text-3xl font-bold text-gray-900">{page.title}</h1>
           {page.excerpt && <p className="mt-2 max-w-3xl text-gray-600">{page.excerpt}</p>}
           <div className="mt-4">
             <AuthorByline author={page.author} updatedAt={page.updatedAt} />

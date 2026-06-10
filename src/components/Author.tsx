@@ -60,7 +60,7 @@ export function AuthorByline({ author, updatedAt }: { author?: Author; updatedAt
 export function AuthorBio({ author }: { author?: Author }) {
   if (!author) return null
   return (
-    <section className="mt-12 flex gap-4 rounded-xl border border-gray-100 bg-gray-50 p-5">
+    <section className="mt-12 flex gap-4 rounded-xl bg-gray-50 p-5">
       <Avatar author={author} size={64} />
       <div>
         <p className="text-xs uppercase tracking-wider text-gray-400">Skribent</p>
@@ -86,7 +86,7 @@ export function AuthorsSection({ authors }: { authors: Author[] }) {
       <p className="mb-6 text-gray-500">Experterna bakom våra recensioner och jämförelser.</p>
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {authors.map((a) => (
-          <div key={a.id} className="flex gap-4 rounded-xl border border-gray-100 bg-white p-5">
+          <div key={a.id} className="flex gap-4 rounded-xl bg-white p-5 shadow-sm">
             <Avatar author={a} size={56} />
             <div>
               <p className="font-semibold text-gray-900">{a.name}</p>

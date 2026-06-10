@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { getCreditCard } from '@/lib/payload'
 import StarRating from '@/components/StarRating'
 import CreditCardSchema from '@/components/CreditCardSchema'
+import Breadcrumbs from '@/components/Breadcrumbs'
 import siteConfig from '@/siteConfig'
 
 interface Props {
@@ -68,17 +69,9 @@ export default async function CardDetailPage({ params }: Props) {
   return (
     <>
       <CreditCardSchema card={card} />
-      <BreadcrumbSchema cardName={card.cardName} slug={slug} />
 
-      <div className="mx-auto max-w-4xl px-4 py-10">
-        {/* Breadcrumb nav */}
-        <nav className="mb-6 flex items-center gap-2 text-sm text-gray-500">
-          <Link href="/" className="hover:text-blue-700">Hem</Link>
-          <span>/</span>
-          <Link href="/" className="hover:text-blue-700">Kreditkort</Link>
-          <span>/</span>
-          <span className="text-gray-900">{card.cardName}</span>
-        </nav>
+      <div className="mx-auto max-w-4xl px-4 pb-10 pt-28">
+        <Breadcrumbs items={[{ label: 'Kreditkort', href: '/' }, { label: card.cardName }]} className="mb-6" />
 
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Main content */}

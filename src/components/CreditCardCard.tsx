@@ -23,13 +23,13 @@ export default function CreditCardCard({ card, rank }: Props) {
 
       <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
         {rank && (
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-700 text-sm font-bold text-white">
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-semibold text-gray-400">
             {rank}
           </div>
         )}
 
         {/* Card image */}
-        <div className="flex h-16 w-24 shrink-0 items-center justify-center rounded-lg border border-gray-100 bg-gray-50 p-2">
+        <div className="flex h-16 w-24 shrink-0 items-center justify-center rounded-lg bg-gray-50 p-2">
           {card.cardImageUrl ? (
             <Image
               src={card.cardImageUrl}
