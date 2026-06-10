@@ -122,6 +122,7 @@ function mapPage(raw: Record<string, unknown>): Page {
     menuOrder: (raw.menuOrder as number) ?? 0,
     excerpt: raw.excerpt as string | undefined,
     content: raw.content as string | undefined,
+    layout: (raw.layout as Page['layout']) || [],
     seo: {
       metaTitle: seo.metaTitle as string | undefined,
       metaDescription: seo.metaDescription as string | undefined,
@@ -175,7 +176,7 @@ export async function getPage(slug: string): Promise<Page | null> {
   type Res = { docs: Record<string, unknown>[] }
   const draft = await isPreview()
   const data = await fetchFromCMS<Res>(
-    `/pages?where[slug][equals]=${encodeURIComponent(slug)}&limit=1&depth=0`,
+    `/pages?where[slug][equals]=${encodeURIComponent(slug)}&limit=1&depth=2`,
     draft,
   )
   return data.docs.length ? mapPage(data.docs[0]) : null

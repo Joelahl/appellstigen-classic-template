@@ -85,6 +85,13 @@ export interface CreditCard {
   lastVerified?: string
 }
 
+/** A layout block from the Pages `layout` blocks field. */
+export interface LayoutBlock {
+  blockType: 'richText' | 'hero' | 'cardComparison' | 'cta' | 'faq' | 'imageText'
+  id?: string
+  [key: string]: unknown
+}
+
 /** Page — mirrors the Pages collection (homepage, category, info, legal). */
 export interface Page {
   id: string
@@ -94,6 +101,7 @@ export interface Page {
   menuOrder: number
   excerpt?: string
   content?: string
+  layout?: LayoutBlock[]
   seo: {
     metaTitle?: string
     metaDescription?: string
