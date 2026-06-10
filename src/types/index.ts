@@ -92,6 +92,35 @@ export interface LayoutBlock {
   [key: string]: unknown
 }
 
+/** Author — byline / editorial team member. */
+export interface Author {
+  id: string
+  name: string
+  title?: string
+  avatarUrl?: string
+  bio?: string
+  email?: string
+  linkedin?: string
+}
+
+/** SiteData — per-site branding/design pulled from the CMS Sites collection. */
+export interface SiteData {
+  id: string
+  name: string
+  domain: string
+  branding: {
+    siteName?: string
+    tagline?: string
+    primaryColor?: string
+    accentColor?: string
+    faviconUrl?: string
+    heroImageUrl?: string
+    backgroundImageUrl?: string
+  }
+  about?: { heading?: string; text?: string }
+  navigation?: Array<{ label: string; href: string }>
+}
+
 /** Page — mirrors the Pages collection (homepage, category, info, legal). */
 export interface Page {
   id: string
@@ -102,6 +131,11 @@ export interface Page {
   excerpt?: string
   content?: string
   layout?: LayoutBlock[]
+  author?: Author
+  bestCard?: CreditCard
+  bestCardSummary?: string
+  toplistCards?: CreditCard[]
+  updatedAt?: string
   seo: {
     metaTitle?: string
     metaDescription?: string

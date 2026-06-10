@@ -1,4 +1,4 @@
-import type { CreditCard, Page } from '@/types'
+import type { CreditCard, Page, Author, SiteData } from '@/types'
 import { draftMode } from 'next/headers'
 
 const CMS_URL = process.env.PAYLOAD_CMS_URL || 'http://localhost:3001'
@@ -112,8 +112,31 @@ function mapCard(raw: Record<string, unknown>): CreditCard {
   }
 }
 
+function mapAuthor(raw: unknown): Author | undefined {
+  if (!raw || typeof raw !== 'object') return undefined
+  const a = raw as Record<string, unknown>
+  if (!a.name) return undefined
+  return {
+    id: String(a.id),
+    name: a.name as string,
+    title: a.title as string | undefined,
+    avatarUrl: resolveImage(a.avatarUrl),
+    bio: a.bio as string | undefined,
+    email: a.email as string | undefined,
+    linkedin: a.linkedin as string | undefined,
+  }
+}
+
+function mapCardRel(raw: unknown): CreditCard | undefined {
+  if (!raw || typeof raw !== 'object') return undefined
+  return mapCard(raw as Record<string, unknown>)
+}
+
 function mapPage(raw: Record<string, unknown>): Page {
   const seo = (raw.seo as Record<string, unknown>) || {}
+  const toplist = ((raw.toplistCards as unknown[]) || [])
+    .map(mapCardRel)
+    .filter(Boolean) as CreditCard[]
   return {
     id: String(raw.id),
     title: raw.title as string,
@@ -123,11 +146,37 @@ function mapPage(raw: Record<string, unknown>): Page {
     excerpt: raw.excerpt as string | undefined,
     content: raw.content as string | undefined,
     layout: (raw.layout as Page['layout']) || [],
+    author: mapAuthor(raw.author),
+    bestCard: mapCardRel(raw.bestCard),
+    bestCardSummary: raw.bestCardSummary as string | undefined,
+    toplistCards: toplist,
+    updatedAt: raw.updatedAt as string | undefined,
     seo: {
       metaTitle: seo.metaTitle as string | undefined,
       metaDescription: seo.metaDescription as string | undefined,
       ogImageUrl: resolveImage(seo.ogImageUrl),
     },
+  }
+}
+
+function mapSite(raw: Record<string, unknown>): SiteData {
+  const b = (raw.branding as Record<string, unknown>) || {}
+  const about = (raw.about as Record<string, unknown>) || {}
+  return {
+    id: String(raw.id),
+    name: raw.name as string,
+    domain: raw.domain as string,
+    branding: {
+      siteName: b.siteName as string | undefined,
+      tagline: b.tagline as string | undefined,
+      primaryColor: b.primaryColor as string | undefined,
+      accentColor: b.accentColor as string | undefined,
+      faviconUrl: b.faviconUrl as string | undefined,
+      heroImageUrl: b.heroImageUrl as string | undefined,
+      backgroundImageUrl: b.backgroundImageUrl as string | undefined,
+    },
+    about: { heading: about.heading as string | undefined, text: about.text as string | undefined },
+    navigation: (raw.navigation as Array<{ label: string; href: string }>) || [],
   }
 }
 
@@ -180,4 +229,25 @@ export async function getPage(slug: string): Promise<Page | null> {
     draft,
   )
   return data.docs.length ? mapPage(data.docs[0]) : null
+}
+
+// ── Site & authors ──────────────────────────────────────────────────────────
+const SITE_DOMAIN = process.env.NEXT_PUBLIC_DOMAIN || ''
+
+/** The current site's CMS record (branding/design). Falls back to first site. */
+export async function getSite(): Promise<SiteData | null> {
+  type Res = { docs: Record<string, unknown>[] }
+  let data = await fetchFromCMS<Res>(
+    `/sites?where[domain][equals]=${encodeURIComponent(SITE_DOMAIN)}&limit=1&depth=1`,
+  )
+  if (!data.docs?.length) {
+    data = await fetchFromCMS<Res>(`/sites?limit=1&depth=1`)
+  }
+  return data.docs?.length ? mapSite(data.docs[0]) : null
+}
+
+export async function getAuthors(limit = 12): Promise<Author[]> {
+  type Res = { docs: Record<string, unknown>[] }
+  const data = await fetchFromCMS<Res>(`/authors?limit=${limit}&depth=0`)
+  return (data.docs || []).map((d) => mapAuthor(d)).filter(Boolean) as Author[]
 }

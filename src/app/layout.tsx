@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import Script from 'next/script'
 import siteConfig from '@/siteConfig'
+import { getSite } from '@/lib/payload'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import './globals.css'
@@ -32,13 +33,25 @@ export const metadata: Metadata = {
   }),
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const site = await getSite()
+  const primary = site?.branding?.primaryColor || siteConfig.primaryColor
+  const accent = site?.branding?.accentColor || siteConfig.accentColor
+  const favicon = site?.branding?.faviconUrl
+  const nav = site?.navigation?.length ? site.navigation : siteConfig.navigation
+  const siteName = site?.branding?.siteName || siteConfig.siteName
+
   return (
     <html lang={siteConfig.locale}>
+      <head>
+        {favicon && <link rel="icon" href={favicon} />}
+        {/* Per-site theme color, consumable via CSS var --brand */}
+        <style>{`:root{--brand:${primary};--brand-accent:${accent};}`}</style>
+      </head>
       <body className={`${inter.className} bg-gray-50 text-gray-900 antialiased`}>
-        <Header />
+        <Header siteName={siteName} nav={nav} />
         <main>{children}</main>
-        <Footer />
+        <Footer siteName={siteName} site={site} />
 
         {/* Affiliate disclosure banner */}
         <div className="bg-amber-50 border-t border-amber-200 py-3 px-4 text-center text-xs text-amber-800">

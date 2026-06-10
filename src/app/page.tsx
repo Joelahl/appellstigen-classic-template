@@ -1,10 +1,9 @@
 import type { Metadata } from 'next'
-import { getCreditCards } from '@/lib/payload'
+import { getCreditCards, getSite, getAuthors, getPages } from '@/lib/payload'
 import CreditCardCard from '@/components/CreditCardCard'
+import { AuthorsSection } from '@/components/Author'
 import siteConfig from '@/siteConfig'
 
-// ISR: regenerate the homepage every 5 min so newly published cards appear
-// without a redeploy (and it never stays baked-empty from a build-time miss).
 export const revalidate = 300
 
 export const metadata: Metadata = {
@@ -15,78 +14,67 @@ export const metadata: Metadata = {
     description: siteConfig.defaultDescription,
     url: `https://${siteConfig.domain}`,
   },
-  alternates: {
-    canonical: `https://${siteConfig.domain}`,
-  },
+  alternates: { canonical: `https://${siteConfig.domain}` },
 }
 
-// Homepage JSON-LD: ItemList of credit cards
-function HomePageSchema({ cardCount }: { cardCount: number }) {
-  const schema = {
-    '@context': 'https://schema.org',
-    '@type': 'WebPage',
-    name: siteConfig.defaultTitle,
-    description: siteConfig.defaultDescription,
-    url: `https://${siteConfig.domain}`,
-    mainEntity: {
-      '@type': 'ItemList',
-      name: 'Bästa kreditkorten',
-      numberOfItems: cardCount,
-    },
-  }
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-    />
-  )
-}
+const FEATURES = [
+  { icon: '💳', title: 'Bonuskort', desc: 'Tjäna pengar på dina köp' },
+  { icon: '💰', title: 'Cashback', desc: 'Få tillbaka på allt du handlar' },
+  { icon: '📉', title: 'Låg ränta', desc: 'Kort med fördelaktiga villkor' },
+  { icon: '🎁', title: 'Utan avgift', desc: 'Gratis kort utan årsavgift' },
+]
 
 export default async function HomePage() {
-  const cards = await getCreditCards()
+  const [cards, site, authors, pages] = await Promise.all([
+    getCreditCards(),
+    getSite(),
+    getAuthors(),
+    getPages(),
+  ])
+
   const featured = cards.filter((c) => c.featured)
-  const rest = cards.filter((c) => !c.featured)
-  const sorted = [...featured, ...rest]
+  const sorted = [...featured, ...cards.filter((c) => !c.featured)]
+  const home = pages.find((p) => p.pageType === 'homepage')
+  const hero = site?.branding?.heroImageUrl
 
   return (
     <>
-      <HomePageSchema cardCount={cards.length} />
-
-      {/* Hero */}
-      <section className="bg-gradient-to-br from-blue-700 to-blue-900 py-16 text-white">
-        <div className="mx-auto max-w-3xl px-4 text-center">
+      {/* Hero — site-themed */}
+      <section
+        className="relative overflow-hidden bg-gradient-to-br from-blue-700 to-blue-900 py-16 text-white"
+        style={hero ? { backgroundImage: `url(${hero})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
+      >
+        {hero && <div className="absolute inset-0 bg-blue-900/70" />}
+        <div className="relative mx-auto max-w-3xl px-4 text-center">
           <h1 className="text-4xl font-bold sm:text-5xl">
-            Hitta det bästa kreditkortet för dig
+            {site?.branding?.tagline || 'Hitta det bästa kreditkortet för dig'}
           </h1>
-          <p className="mt-4 text-lg text-blue-200">
-            Vi jämför {cards.length} kreditkort och rankar dem efter årsavgift, ränta, bonus och
-            försäkringar — så att du snabbt hittar rätt.
-          </p>
-          <p className="mt-2 text-sm text-blue-300">
-            Uppdaterat {new Date().toLocaleDateString('sv-SE', { year: 'numeric', month: 'long' })}
+          <p className="mt-4 text-lg text-blue-100">
+            Vi jämför {cards.length} kreditkort efter avgift, ränta, bonus och försäkringar.
           </p>
         </div>
       </section>
 
-      {/* Filter bar — placeholder for future interactive filtering */}
-      <div className="sticky top-[57px] z-40 border-b border-gray-200 bg-white shadow-sm">
-        <div className="mx-auto flex max-w-6xl items-center gap-4 overflow-x-auto px-4 py-3 text-sm">
-          <span className="font-semibold text-gray-600">Filtrera:</span>
-          <FilterChip label="Utan årsavgift" />
-          <FilterChip label="Bäst cashback" />
-          <FilterChip label="Reseförsäkring" />
-          <FilterChip label="Bra bonus" />
+      {/* Feature cards */}
+      <section className="mx-auto -mt-8 max-w-6xl px-4">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {FEATURES.map((f) => (
+            <div key={f.title} className="rounded-xl border border-gray-100 bg-white p-5 text-center shadow-sm">
+              <div className="text-3xl">{f.icon}</div>
+              <p className="mt-2 font-semibold text-gray-900">{f.title}</p>
+              <p className="text-sm text-gray-500">{f.desc}</p>
+            </div>
+          ))}
         </div>
-      </div>
+      </section>
 
-      {/* Card list */}
-      <section className="mx-auto max-w-6xl px-4 py-10">
+      {/* Toplist */}
+      <section className="mx-auto max-w-6xl px-4 py-12">
         <h2 className="mb-6 text-2xl font-bold text-gray-900">
           Bästa kreditkorten {new Date().getFullYear()}
         </h2>
-
         {sorted.length === 0 ? (
-          <p className="text-gray-500">Inga kreditkort hittades. Kontrollera att CMS är konfigurerat.</p>
+          <p className="text-gray-500">Inga kreditkort hittades.</p>
         ) : (
           <div className="space-y-4">
             {sorted.map((card, i) => (
@@ -94,18 +82,31 @@ export default async function HomePage() {
             ))}
           </div>
         )}
-
-        {/* Disclaimer */}
-        <p className="mt-8 text-xs text-gray-400 leading-relaxed">{siteConfig.disclaimer}</p>
+        <p className="mt-8 text-xs leading-relaxed text-gray-400">{siteConfig.disclaimer}</p>
       </section>
-    </>
-  )
-}
 
-function FilterChip({ label }: { label: string }) {
-  return (
-    <button className="shrink-0 rounded-full border border-gray-200 px-4 py-1.5 text-gray-600 hover:border-blue-600 hover:text-blue-700 transition">
-      {label}
-    </button>
+      {/* Homepage editorial content from the CMS page */}
+      {home?.content && (
+        <section className="mx-auto max-w-3xl px-4 pb-12">
+          <article
+            className="prose prose-sm sm:prose max-w-none prose-headings:font-semibold prose-a:text-blue-700"
+            dangerouslySetInnerHTML={{ __html: home.content }}
+          />
+        </section>
+      )}
+
+      {/* What we do */}
+      {site?.about?.text && (
+        <section className="bg-gray-50 py-12">
+          <div className="mx-auto max-w-3xl px-4 text-center">
+            <h2 className="text-2xl font-bold text-gray-900">{site.about.heading || 'Vad vi gör'}</h2>
+            <p className="mt-3 whitespace-pre-line text-gray-600">{site.about.text}</p>
+          </div>
+        </section>
+      )}
+
+      {/* Editorial team */}
+      <AuthorsSection authors={authors} />
+    </>
   )
 }
