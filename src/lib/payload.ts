@@ -44,6 +44,61 @@ function resolveImage(val: unknown): string | undefined {
   return undefined
 }
 
+/** Minimal Lexical (Payload rich text) → HTML serializer for simple content
+ *  (paragraphs, headings, lists, links, bold/italic/underline). */
+function lexicalToHtml(value: unknown): string | undefined {
+  if (!value || typeof value !== 'object') return typeof value === 'string' ? value : undefined
+  const root = (value as Record<string, unknown>).root as Record<string, unknown> | undefined
+  if (!root || !Array.isArray(root.children)) return undefined
+  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+  const text = (n: Record<string, unknown>): string => {
+    let t = esc(String(n.text ?? ''))
+    const f = Number(n.format || 0)
+    if (f & 1) t = `<strong>${t}</strong>`
+    if (f & 2) t = `<em>${t}</em>`
+    if (f & 8) t = `<u>${t}</u>`
+    return t
+  }
+
+  const kids = (arr: unknown): string =>
+    (Array.isArray(arr) ? arr : []).map((c) => node(c as Record<string, unknown>)).join('')
+
+  const node = (n: Record<string, unknown>): string => {
+    switch (n.type) {
+      case 'text':
+        return text(n)
+      case 'linebreak':
+        return '<br/>'
+      case 'paragraph': {
+        const inner = kids(n.children)
+        return inner ? `<p>${inner}</p>` : ''
+      }
+      case 'heading': {
+        const tag = (n.tag as string) || 'h2'
+        return `<${tag}>${kids(n.children)}</${tag}>`
+      }
+      case 'list': {
+        const tag = n.tag === 'ol' || n.listType === 'number' ? 'ol' : 'ul'
+        return `<${tag}>${kids(n.children)}</${tag}>`
+      }
+      case 'listitem':
+        return `<li>${kids(n.children)}</li>`
+      case 'quote':
+        return `<blockquote>${kids(n.children)}</blockquote>`
+      case 'link': {
+        const url = ((n.fields as Record<string, unknown>)?.url as string) || '#'
+        return `<a href="${esc(url)}">${kids(n.children)}</a>`
+      }
+      default:
+        return kids(n.children)
+    }
+  }
+
+  const html = kids(root.children).trim()
+  return html || undefined
+}
+
 function mapCard(raw: Record<string, unknown>): CreditCard {
   const fees = (raw.fees as Record<string, unknown>) || {}
   const eligibility = (raw.eligibility as Record<string, unknown>) || {}
@@ -121,7 +176,7 @@ function mapAuthor(raw: unknown): Author | undefined {
     name: a.name as string,
     title: a.title as string | undefined,
     avatarUrl: resolveImage(a.avatar) || resolveImage(a.avatarUrl),
-    bio: a.bio as string | undefined,
+    bio: lexicalToHtml(a.bio),
     email: a.email as string | undefined,
     linkedin: a.linkedin as string | undefined,
   }
@@ -148,7 +203,7 @@ function mapPage(raw: Record<string, unknown>): Page {
     layout: (raw.layout as Page['layout']) || [],
     author: mapAuthor(raw.author),
     bestCard: mapCardRel(raw.bestCard),
-    bestCardSummary: raw.bestCardSummary as string | undefined,
+    bestCardSummary: lexicalToHtml(raw.bestCardSummary),
     toplistCards: toplist,
     updatedAt: raw.updatedAt as string | undefined,
     createdAt: raw.createdAt as string | undefined,
@@ -177,7 +232,7 @@ function mapSite(raw: Record<string, unknown>): SiteData {
       heroImageUrl: resolveImage(b.heroImage) || resolveImage(b.heroImageUrl),
       backgroundImageUrl: resolveImage(b.backgroundImage) || resolveImage(b.backgroundImageUrl),
     },
-    about: { heading: about.heading as string | undefined, text: about.text as string | undefined },
+    about: { heading: about.heading as string | undefined, text: lexicalToHtml(about.text) },
     navigation: (raw.navigation as Array<{ label: string; href: string }>) || [],
   }
 }

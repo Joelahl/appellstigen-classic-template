@@ -123,7 +123,10 @@ export default async function HomePage() {
         <section className="bg-gray-50 py-12">
           <div className="mx-auto max-w-3xl px-4 text-center">
             <h2 className="text-2xl font-bold text-gray-900">{site.about.heading || 'Vad vi gör'}</h2>
-            <p className="mt-3 whitespace-pre-line text-gray-600">{site.about.text}</p>
+            <div
+              className="prose prose-sm mx-auto mt-3 max-w-none text-gray-600 prose-a:text-blue-700"
+              dangerouslySetInnerHTML={{ __html: site.about.text }}
+            />
           </div>
         </section>
       )}

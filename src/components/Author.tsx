@@ -81,7 +81,12 @@ export function AuthorBio({ author }: { author?: Author }) {
         <p className="text-xs uppercase tracking-wider text-gray-400">Skribent</p>
         <p className="font-bold text-gray-900">{author.name}</p>
         {author.title && <p className="text-sm text-gray-500">{author.title}</p>}
-        {author.bio && <p className="mt-2 text-sm text-gray-600">{author.bio}</p>}
+        {author.bio && (
+          <div
+            className="prose prose-sm mt-2 max-w-none text-gray-600 prose-a:text-blue-700"
+            dangerouslySetInnerHTML={{ __html: author.bio }}
+          />
+        )}
         {author.linkedin && (
           <a href={author.linkedin} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block text-sm text-blue-600 hover:underline">
             LinkedIn →
@@ -106,7 +111,12 @@ export function AuthorsSection({ authors }: { authors: Author[] }) {
             <div>
               <p className="font-semibold text-gray-900">{a.name}</p>
               {a.title && <p className="text-sm text-blue-700">{a.title}</p>}
-              {a.bio && <p className="mt-1 text-sm text-gray-500 line-clamp-3">{a.bio}</p>}
+              {a.bio && (
+                <div
+                  className="prose prose-sm mt-1 line-clamp-3 max-w-none text-gray-500"
+                  dangerouslySetInnerHTML={{ __html: a.bio }}
+                />
+              )}
             </div>
           </div>
         ))}
