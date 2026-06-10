@@ -51,20 +51,22 @@ export default async function GenericPage({ params }: Props) {
       {/* Distinct hero banner — category pages get a prominent themed banner */}
       {isCategory ? (
         <section
-          className="relative overflow-hidden text-white"
+          className="relative overflow-hidden text-gray-900"
           style={{
-            background: 'linear-gradient(135deg, var(--brand,#1d4ed8), #1e3a8a)',
+            background: heroImg
+              ? undefined
+              : 'linear-gradient(135deg, color-mix(in srgb, var(--brand,#1d4ed8) 16%, white), color-mix(in srgb, var(--brand-accent,#f59e0b) 14%, white))',
             ...(heroImg ? { backgroundImage: `url(${heroImg})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}),
           }}
         >
-          {heroImg && <div className="absolute inset-0 bg-blue-900/75" />}
+          {heroImg && <div className="absolute inset-0 bg-white/70" />}
           <div className="relative mx-auto max-w-5xl px-4 py-14">
             <p className="text-sm font-medium uppercase tracking-wider" style={{ color: 'var(--brand-accent,#f59e0b)' }}>
               Jämförelse
             </p>
             <h1 className="mt-1 text-3xl font-bold sm:text-4xl">{page.title}</h1>
-            {page.excerpt && <p className="mt-3 max-w-2xl text-blue-100">{page.excerpt}</p>}
-            <div className="mt-5 [&_*]:!text-blue-100 [&_.font-medium]:!text-white">
+            {page.excerpt && <p className="mt-3 max-w-2xl text-gray-700">{page.excerpt}</p>}
+            <div className="mt-5">
               <AuthorByline author={page.author} updatedAt={page.updatedAt} />
             </div>
           </div>

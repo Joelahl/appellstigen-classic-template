@@ -42,18 +42,23 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Hero — site-themed */}
+      {/* Hero — site-themed, bright faded background with dark text */}
       <section
-        className="relative overflow-hidden bg-gradient-to-br from-blue-700 to-blue-900 py-16 text-white"
-        style={hero ? { backgroundImage: `url(${hero})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
+        className="relative overflow-hidden py-16 text-gray-900"
+        style={{
+          background: hero
+            ? undefined
+            : 'linear-gradient(135deg, color-mix(in srgb, var(--brand,#1d4ed8) 16%, white), color-mix(in srgb, var(--brand-accent,#f59e0b) 14%, white))',
+          ...(hero ? { backgroundImage: `url(${hero})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}),
+        }}
       >
-        {hero && <div className="absolute inset-0 bg-blue-900/70" />}
-        <div className="relative mx-auto max-w-3xl px-4 text-center">
+        {hero && <div className="absolute inset-0 bg-white/65" />}
+        <div className="relative mx-auto max-w-4xl px-4 text-left">
           <h1 className="text-4xl font-bold sm:text-5xl">
             <span style={{ color: 'var(--brand-accent, #f59e0b)' }}>{taglineFirst}</span>{' '}
             {taglineRest.join(' ')}
           </h1>
-          <p className="mt-4 text-lg text-blue-100">
+          <p className="mt-4 max-w-2xl text-lg text-gray-700">
             Vi jämför {cards.length} kreditkort efter avgift, ränta, bonus och försäkringar.
           </p>
         </div>
