@@ -45,8 +45,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang={siteConfig.locale}>
       <head>
         {favicon && <link rel="icon" href={favicon} />}
-        {/* Per-site theme color, consumable via CSS var --brand */}
-        <style>{`:root{--brand:${primary};--brand-accent:${accent};}`}</style>
+        {/* Per-site theme tokens. --hero-bg is the shared faded hero/breadcrumb background. */}
+        <style>{`:root{--brand:${primary};--brand-accent:${accent};--hero-bg:color-mix(in srgb, ${primary} 12%, white);}`}</style>
       </head>
       <body className={`${inter.className} bg-gray-50 text-gray-900 antialiased`}>
         <Header siteName={siteName} logoUrl={site?.branding?.logoUrl} nav={nav} />

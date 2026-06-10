@@ -12,10 +12,19 @@ export function BestCardBox({
   if (!summary) return null
   return (
     <section
-      className="rounded-lg border-l-4 bg-gray-50 p-6"
-      style={{ borderColor: 'var(--brand, #1d4ed8)' }}
+      className="rounded-lg border bg-white p-6"
+      style={{ borderColor: 'var(--brand-accent, #f59e0b)' }}
     >
-      <h2 className="text-xl font-bold text-gray-900">
+      <span
+        className="inline-block rounded px-2 py-0.5 text-xs font-semibold uppercase tracking-wide"
+        style={{
+          color: 'var(--brand-accent,#f59e0b)',
+          background: 'color-mix(in srgb, var(--brand-accent,#f59e0b) 14%, white)',
+        }}
+      >
+        Expertens rekommendation
+      </span>
+      <h2 className="mt-3 text-xl font-bold text-gray-900">
         Vilket är det bästa {categoryTitle.toLowerCase()}?
       </h2>
       <p className="mt-3 whitespace-pre-line text-gray-700">{summary}</p>

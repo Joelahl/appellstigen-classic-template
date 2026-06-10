@@ -38,11 +38,16 @@ export default function Breadcrumbs({
         return (
           <span key={i} className="flex items-center gap-1.5">
             {c.href && !last ? (
-              <Link href={c.href} className="hover:text-gray-800">
+              <Link href={c.href} className="uppercase tracking-wide hover:text-gray-800">
                 {c.label}
               </Link>
             ) : (
-              <span className={last ? 'text-gray-700' : ''}>{c.label}</span>
+              <span
+                className="font-semibold uppercase tracking-wide"
+                style={{ color: 'var(--brand-accent, #f59e0b)' }}
+              >
+                {c.label}
+              </span>
             )}
             {!last && <span className="text-gray-300">/</span>}
           </span>

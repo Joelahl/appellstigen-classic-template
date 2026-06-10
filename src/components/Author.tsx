@@ -28,30 +28,45 @@ function Avatar({ author, size = 40 }: { author: Author; size?: number }) {
   )
 }
 
-/** Compact byline: avatar · name · title · last updated. */
-export function AuthorByline({ author, updatedAt }: { author?: Author; updatedAt?: string }) {
-  if (!author && !updatedAt) return null
+function fmtDate(d?: string) {
+  if (!d) return ''
+  return new Date(d).toLocaleDateString('sv-SE', { year: 'numeric', month: 'long', day: 'numeric' })
+}
+
+/** Rich byline: avatar · name + role badge · published/updated dates. */
+export function AuthorByline({
+  author,
+  updatedAt,
+  createdAt,
+}: {
+  author?: Author
+  updatedAt?: string
+  createdAt?: string
+}) {
+  if (!author && !updatedAt && !createdAt) return null
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500">
-      {author && (
-        <span className="flex items-center gap-2">
-          <Avatar author={author} size={32} />
-          <span>
-            Av <span className="font-medium text-gray-800">{author.name}</span>
-            {author.title ? <span className="text-gray-400"> · {author.title}</span> : null}
-          </span>
-        </span>
-      )}
-      {updatedAt && (
-        <span className="text-gray-400">
-          Uppdaterad{' '}
-          {new Date(updatedAt).toLocaleDateString('sv-SE', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          })}
-        </span>
-      )}
+    <div className="flex items-center gap-3">
+      {author && <Avatar author={author} size={40} />}
+      <div className="text-sm">
+        {author && (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-semibold text-gray-900">{author.name}</span>
+            {author.title && (
+              <span
+                className="rounded px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide"
+                style={{ color: 'var(--brand-accent,#f59e0b)', background: 'color-mix(in srgb, var(--brand-accent,#f59e0b) 16%, white)' }}
+              >
+                {author.title}
+              </span>
+            )}
+          </div>
+        )}
+        <div className="mt-0.5 text-xs uppercase tracking-wide text-gray-500">
+          {createdAt && <>Publicerad {fmtDate(createdAt)}</>}
+          {createdAt && updatedAt && <span className="px-1.5">·</span>}
+          {updatedAt && <>Uppdaterad {fmtDate(updatedAt)}</>}
+        </div>
+      </div>
     </div>
   )
 }

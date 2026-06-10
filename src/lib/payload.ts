@@ -151,6 +151,7 @@ function mapPage(raw: Record<string, unknown>): Page {
     bestCardSummary: raw.bestCardSummary as string | undefined,
     toplistCards: toplist,
     updatedAt: raw.updatedAt as string | undefined,
+    createdAt: raw.createdAt as string | undefined,
     seo: {
       metaTitle: seo.metaTitle as string | undefined,
       metaDescription: seo.metaDescription as string | undefined,

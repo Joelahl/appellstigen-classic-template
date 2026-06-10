@@ -43,9 +43,9 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Breadcrumb bar — just below the navigation */}
-      <div className="bg-white">
-        <div className="mx-auto max-w-6xl px-4 pt-3">
+      {/* Breadcrumb bar — same background as hero, thin lines above and below */}
+      <div className="border-y border-[#e5e7eb]" style={{ background: 'var(--hero-bg)' }}>
+        <div className="mx-auto max-w-6xl px-4 py-2.5">
           <Breadcrumbs items={[]} />
         </div>
       </div>
@@ -54,7 +54,7 @@ export default async function HomePage() {
       <section
         className="relative overflow-hidden py-10 text-gray-900 sm:py-12"
         style={{
-          background: hero ? undefined : 'color-mix(in srgb, var(--brand,#1d4ed8) 12%, white)',
+          background: hero ? undefined : 'var(--hero-bg)',
           ...(hero ? { backgroundImage: `url(${hero})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}),
         }}
       >

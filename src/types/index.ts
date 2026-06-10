@@ -137,6 +137,7 @@ export interface Page {
   bestCardSummary?: string
   toplistCards?: CreditCard[]
   updatedAt?: string
+  createdAt?: string
   seo: {
     metaTitle?: string
     metaDescription?: string
