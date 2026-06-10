@@ -49,7 +49,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <style>{`:root{--brand:${primary};--brand-accent:${accent};}`}</style>
       </head>
       <body className={`${inter.className} bg-gray-50 text-gray-900 antialiased`}>
-        <Header siteName={siteName} nav={nav} />
+        <Header siteName={siteName} logoUrl={site?.branding?.logoUrl} nav={nav} />
         <main>{children}</main>
         <Footer siteName={siteName} site={site} />
 

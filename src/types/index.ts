@@ -111,6 +111,7 @@ export interface SiteData {
   branding: {
     siteName?: string
     tagline?: string
+    logoUrl?: string
     primaryColor?: string
     accentColor?: string
     faviconUrl?: string

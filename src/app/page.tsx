@@ -43,57 +43,58 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Hero — site-themed, bright faded background with dark text.
-          Background extends up behind the (overlay) navigation. */}
+      {/* Breadcrumb bar — just below the navigation */}
+      <div className="bg-white">
+        <div className="mx-auto max-w-6xl px-4 pt-3">
+          <Breadcrumbs items={[]} />
+        </div>
+      </div>
+
+      {/* Hero band — single faded color; contains h1, intro and the category grid */}
       <section
-        className="relative overflow-hidden pb-14 pt-28 text-gray-900"
+        className="relative overflow-hidden py-10 text-gray-900 sm:py-12"
         style={{
-          background: hero
-            ? undefined
-            : 'linear-gradient(135deg, color-mix(in srgb, var(--brand,#1d4ed8) 16%, white), color-mix(in srgb, var(--brand-accent,#f59e0b) 14%, white))',
+          background: hero ? undefined : 'color-mix(in srgb, var(--brand,#1d4ed8) 12%, white)',
           ...(hero ? { backgroundImage: `url(${hero})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}),
         }}
       >
         {hero && <div className="absolute inset-0 bg-white/65" />}
         <div className="relative mx-auto max-w-6xl px-4 text-left">
-          <Breadcrumbs items={[]} />
-          <h1 className="mt-3 text-4xl font-bold sm:text-5xl">
+          <h1 className="font-bold leading-[1.05] text-[2.5rem] lg:text-[4.5rem]">
             <span style={{ color: 'var(--brand-accent, #f59e0b)' }}>{taglineFirst}</span>{' '}
             {taglineRest.join(' ')}
           </h1>
           <p className="mt-4 max-w-2xl text-lg text-gray-700">
             Vi jämför {cards.length} kreditkort efter avgift, ränta, bonus och försäkringar.
           </p>
-        </div>
-      </section>
 
-      {/* Feature cards — clickable category groups */}
-      <section className="mx-auto -mt-8 max-w-6xl px-4">
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {FEATURES.map((f) => (
-            <Link
-              key={f.title}
-              href={f.href}
-              className="group rounded-xl bg-white p-5 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-            >
-              <div className="text-3xl">{f.icon}</div>
-              <p className="mt-2 font-semibold text-gray-900 group-hover:text-blue-700">{f.title}</p>
-              <p className="text-sm text-gray-500">{f.desc}</p>
-              <span
-                className="mt-3 inline-block text-sm font-medium"
-                style={{ color: 'var(--brand, #1d4ed8)' }}
+          {/* Category grid inside the hero band */}
+          <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+            {FEATURES.map((f) => (
+              <Link
+                key={f.title}
+                href={f.href}
+                className="group rounded-lg bg-white p-5 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
               >
-                Se korten →
-              </span>
-            </Link>
-          ))}
+                <div className="text-3xl">{f.icon}</div>
+                <p className="mt-2 font-semibold text-gray-900 group-hover:text-blue-700">{f.title}</p>
+                <p className="text-sm text-gray-500">{f.desc}</p>
+                <span className="mt-3 inline-block text-sm font-medium" style={{ color: 'var(--brand, #1d4ed8)' }}>
+                  Se korten →
+                </span>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* Toplist */}
       <section className="mx-auto max-w-6xl px-4 py-12">
-        <h2 className="mb-6 text-2xl font-bold text-gray-900">
+        <h2 className="mb-6 flex flex-wrap items-center gap-3 text-2xl font-bold text-gray-900">
           Bästa kreditkorten {new Date().getFullYear()}
+          <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-sm font-medium text-gray-500">
+            {sorted.length} kort
+          </span>
         </h2>
         {sorted.length === 0 ? (
           <p className="text-gray-500">Inga kreditkort hittades.</p>

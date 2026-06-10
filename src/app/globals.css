@@ -23,16 +23,16 @@
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-[#5D9B01] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#4d8101] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5D9B01];
+    @apply inline-flex items-center justify-center gap-2 rounded-md bg-[#5D9B01] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#4d8101] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5D9B01];
   }
 
   .btn-outline {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold text-[#5D9B01] ring-1 ring-[#5D9B01]/40 transition hover:bg-[#5D9B01]/5;
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-5 py-2.5 text-sm font-semibold text-[#5D9B01] ring-1 ring-[#5D9B01]/40 transition hover:bg-[#5D9B01]/5;
   }
 
-  /* Soft card: shadow-driven, minimal border for a cleaner look. */
+  /* Soft card: shadow-driven, minimal border, modest radius. */
   .card {
-    @apply rounded-2xl bg-white shadow-sm;
+    @apply rounded-lg bg-white shadow-sm;
   }
 
   .star-full {

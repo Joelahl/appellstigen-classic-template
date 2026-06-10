@@ -49,24 +49,28 @@ export default async function GenericPage({ params }: Props) {
 
   return (
     <>
-      {/* Distinct hero banner — category pages get a prominent themed banner */}
+      {/* Breadcrumb bar — just below the navigation */}
+      <div className="bg-white">
+        <div className="mx-auto max-w-5xl px-4 pt-3">
+          <Breadcrumbs items={[{ label: page.title }]} />
+        </div>
+      </div>
+
+      {/* Hero banner — toplist width, single faded color, responsive h1 */}
       {isCategory ? (
         <section
           className="relative overflow-hidden text-gray-900"
           style={{
-            background: heroImg
-              ? undefined
-              : 'linear-gradient(135deg, color-mix(in srgb, var(--brand,#1d4ed8) 16%, white), color-mix(in srgb, var(--brand-accent,#f59e0b) 14%, white))',
+            background: heroImg ? undefined : 'color-mix(in srgb, var(--brand,#1d4ed8) 12%, white)',
             ...(heroImg ? { backgroundImage: `url(${heroImg})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}),
           }}
         >
           {heroImg && <div className="absolute inset-0 bg-white/70" />}
-          <div className="relative mx-auto max-w-6xl px-4 pb-12 pt-28">
-            <Breadcrumbs items={[{ label: page.title }]} />
-            <p className="mt-3 text-sm font-medium uppercase tracking-wider" style={{ color: 'var(--brand-accent,#f59e0b)' }}>
+          <div className="relative mx-auto max-w-5xl px-4 py-10">
+            <p className="text-sm font-medium uppercase tracking-wider" style={{ color: 'var(--brand-accent,#f59e0b)' }}>
               Jämförelse
             </p>
-            <h1 className="mt-1 text-3xl font-bold sm:text-4xl">{page.title}</h1>
+            <h1 className="mt-1 font-bold leading-[1.05] text-[2.5rem] lg:text-[4.5rem]">{page.title}</h1>
             {page.excerpt && <p className="mt-3 max-w-2xl text-gray-700">{page.excerpt}</p>}
             <div className="mt-5">
               <AuthorByline author={page.author} updatedAt={page.updatedAt} />
@@ -74,9 +78,8 @@ export default async function GenericPage({ params }: Props) {
           </div>
         </section>
       ) : (
-        <header className="mx-auto max-w-5xl px-4 pb-6 pt-28">
-          <Breadcrumbs items={[{ label: page.title }]} />
-          <h1 className="mt-3 text-3xl font-bold text-gray-900">{page.title}</h1>
+        <header className="mx-auto max-w-5xl px-4 pb-6 pt-8">
+          <h1 className="font-bold leading-[1.1] text-[2.5rem] lg:text-[4.5rem] text-gray-900">{page.title}</h1>
           {page.excerpt && <p className="mt-2 max-w-3xl text-gray-600">{page.excerpt}</p>}
           <div className="mt-4">
             <AuthorByline author={page.author} updatedAt={page.updatedAt} />
@@ -88,13 +91,18 @@ export default async function GenericPage({ params }: Props) {
       {/* Category extras: best-card box, toplist, comparison table */}
       {isCategory && (
         <div className="space-y-10">
-          {page.bestCard && (
-            <BestCardBox card={page.bestCard} summary={page.bestCardSummary} categoryTitle={page.title} />
+          {page.bestCardSummary && (
+            <BestCardBox summary={page.bestCardSummary} categoryTitle={page.title} />
           )}
 
           {toplist.length > 0 && (
             <section>
-              <h2 className="mb-6 text-2xl font-bold text-gray-900">Topplista — {page.title}</h2>
+              <h2 className="mb-6 flex flex-wrap items-center gap-3 text-2xl font-bold text-gray-900">
+                Topplista — {page.title}
+                <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-sm font-medium text-gray-500">
+                  {toplist.length} kort
+                </span>
+              </h2>
               <div className="space-y-4">
                 {toplist.map((card, i) => (
                   <CreditCardCard key={card.id} card={card} rank={i + 1} />

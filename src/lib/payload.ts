@@ -169,6 +169,7 @@ function mapSite(raw: Record<string, unknown>): SiteData {
     branding: {
       siteName: b.siteName as string | undefined,
       tagline: b.tagline as string | undefined,
+      logoUrl: resolveImage(b.logo),
       primaryColor: b.primaryColor as string | undefined,
       accentColor: b.accentColor as string | undefined,
       faviconUrl: b.faviconUrl as string | undefined,

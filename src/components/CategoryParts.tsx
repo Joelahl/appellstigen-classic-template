@@ -1,51 +1,24 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import type { CreditCard } from '@/types'
-import StarRating from './StarRating'
 
-/** "What's the best card?" answer box with a clear H2 and the winning card. */
+/** "What's the best?" answer box — free-text answer with a clear H2. */
 export function BestCardBox({
-  card,
   summary,
   categoryTitle,
 }: {
-  card?: CreditCard
   summary?: string
   categoryTitle: string
 }) {
-  if (!card) return null
+  if (!summary) return null
   return (
-    <section className="rounded-2xl border-2 border-amber-300 bg-amber-50 p-6">
+    <section
+      className="rounded-lg border-l-4 bg-gray-50 p-6"
+      style={{ borderColor: 'var(--brand, #1d4ed8)' }}
+    >
       <h2 className="text-xl font-bold text-gray-900">
         Vilket är det bästa {categoryTitle.toLowerCase()}?
       </h2>
-      <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center">
-        <div className="flex h-16 w-24 shrink-0 items-center justify-center rounded-lg border border-amber-200 bg-white p-2">
-          {card.cardImageUrl ? (
-            <Image src={card.cardImageUrl} alt={card.cardName} width={84} height={52} className="object-contain" />
-          ) : (
-            <span className="text-xs text-gray-400">{card.cardName}</span>
-          )}
-        </div>
-        <div className="flex-1">
-          <p className="text-sm text-gray-500">Vårt toppval</p>
-          <p className="text-lg font-bold text-gray-900">{card.cardName}</p>
-          {typeof card.editorRating === 'number' && card.editorRating > 0 && (
-            <StarRating rating={card.editorRating} size="sm" showLabel />
-          )}
-        </div>
-        {card.affiliateLink && (
-          <a
-            href={card.affiliateLink}
-            target="_blank"
-            rel="noopener noreferrer nofollow sponsored"
-            className="btn-primary text-center"
-          >
-            {card.ctaText}
-          </a>
-        )}
-      </div>
-      {summary && <p className="mt-4 text-gray-700">{summary}</p>}
+      <p className="mt-3 whitespace-pre-line text-gray-700">{summary}</p>
     </section>
   )
 }

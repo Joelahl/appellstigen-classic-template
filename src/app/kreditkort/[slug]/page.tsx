@@ -70,7 +70,7 @@ export default async function CardDetailPage({ params }: Props) {
     <>
       <CreditCardSchema card={card} />
 
-      <div className="mx-auto max-w-4xl px-4 pb-10 pt-28">
+      <div className="mx-auto max-w-4xl px-4 pb-10 pt-6">
         <Breadcrumbs items={[{ label: 'Kreditkort', href: '/' }, { label: card.cardName }]} className="mb-6" />
 
         <div className="grid gap-8 lg:grid-cols-3">
