@@ -9,6 +9,7 @@ interface Props {
 
 // ISR + on-demand: render pages on first request, no build-time CMS dependency.
 export const dynamicParams = true
+export const revalidate = 300
 export async function generateStaticParams() {
   return []
 }

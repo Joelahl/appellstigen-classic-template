@@ -3,6 +3,10 @@ import { getCreditCards } from '@/lib/payload'
 import CreditCardCard from '@/components/CreditCardCard'
 import siteConfig from '@/siteConfig'
 
+// ISR: regenerate the homepage every 5 min so newly published cards appear
+// without a redeploy (and it never stays baked-empty from a build-time miss).
+export const revalidate = 300
+
 export const metadata: Metadata = {
   title: siteConfig.defaultTitle,
   description: siteConfig.defaultDescription,
