@@ -1,9 +1,9 @@
-import { getCreditCards } from '@/lib/payload'
+import { getCreditCards, getReviewPath } from '@/lib/payload'
 import siteConfig from '@/siteConfig'
 
 export async function GET() {
   const base = `https://${siteConfig.domain}`
-  const cards = await getCreditCards()
+  const [cards, reviewPath] = await Promise.all([getCreditCards(), getReviewPath()])
 
   const items = cards
     .slice(0, 20)
@@ -11,8 +11,8 @@ export async function GET() {
       (card) => `
     <item>
       <title><![CDATA[${card.cardName} — Recension & Omdöme]]></title>
-      <link>${base}/kreditkort/${card.slug}</link>
-      <guid isPermaLink="true">${base}/kreditkort/${card.slug}</guid>
+      <link>${base}/${reviewPath}/${card.slug}</link>
+      <guid isPermaLink="true">${base}/${reviewPath}/${card.slug}</guid>
       <description><![CDATA[${card.verdict || `Läs vår recension av ${card.cardName} från ${card.issuer}.`}]]></description>
       ${card.lastVerified ? `<pubDate>${new Date(card.lastVerified).toUTCString()}</pubDate>` : ''}
     </item>`,

@@ -5,13 +5,15 @@ import type { CreditCard } from '@/types'
 interface Props {
   card: CreditCard
   rank?: number
+  /** URL segment for the review page (e.g. "kreditkort"). */
+  reviewPath?: string
 }
 
 /**
  * Vertical, mobile-first comparison card used in the toplist grid.
  * Rank (top-left) + rating (top-right), image, name, key facts, CTA, review link.
  */
-export default function CreditCardCard({ card, rank }: Props) {
+export default function CreditCardCard({ card, rank, reviewPath = 'kreditkort' }: Props) {
   return (
     <article
       className="flex h-full flex-col overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100"
@@ -92,7 +94,7 @@ export default function CreditCardCard({ card, rank }: Props) {
           </a>
         )}
         <Link
-          href={`/kreditkort/${card.slug}`}
+          href={`/${reviewPath}/${card.slug}`}
           className="mt-2 block rounded-md border border-gray-200 py-2 text-center text-sm font-medium text-gray-600 hover:bg-gray-50"
         >
           Läs recension →

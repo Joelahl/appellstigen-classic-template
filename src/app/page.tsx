@@ -105,7 +105,7 @@ export default async function HomePage() {
         ) : (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {sorted.map((card, i) => (
-              <CreditCardCard key={card.id} card={card} rank={i + 1} />
+              <CreditCardCard key={card.id} card={card} rank={i + 1} reviewPath={site?.reviewSlug} />
             ))}
           </div>
         )}

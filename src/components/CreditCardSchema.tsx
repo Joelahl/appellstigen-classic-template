@@ -3,9 +3,10 @@ import siteConfig from '@/siteConfig'
 
 interface Props {
   card: CreditCard
+  reviewPath?: string
 }
 
-export default function CreditCardSchema({ card }: Props) {
+export default function CreditCardSchema({ card, reviewPath = 'kreditkort' }: Props) {
   const hasRating = typeof card.editorRating === 'number' && card.editorRating > 0
 
   const schema = {
@@ -17,7 +18,7 @@ export default function CreditCardSchema({ card }: Props) {
     ...(card.cardImageUrl && { image: card.cardImageUrl }),
     offers: {
       '@type': 'Offer',
-      url: `https://${siteConfig.domain}/kreditkort/${card.slug}`,
+      url: `https://${siteConfig.domain}/${reviewPath}/${card.slug}`,
       availability: 'https://schema.org/InStock',
       priceCurrency: 'SEK',
       price: '0',

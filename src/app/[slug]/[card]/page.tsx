@@ -1,15 +1,14 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
-import Link from 'next/link'
-import { getCreditCard } from '@/lib/payload'
+import { getCreditCard, getReviewPath } from '@/lib/payload'
 import StarRating from '@/components/StarRating'
 import CreditCardSchema from '@/components/CreditCardSchema'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import siteConfig from '@/siteConfig'
 
 interface Props {
-  params: Promise<{ slug: string }>
+  params: Promise<{ slug: string; card: string }>
 }
 
 // ISR + on-demand: build without a live CMS, render on first request.
@@ -19,14 +18,16 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params
-  const card = await getCreditCard(slug)
+  const { slug, card: cardSlug } = await params
+  const reviewPath = await getReviewPath()
+  if (slug !== reviewPath) return {}
+  const card = await getCreditCard(cardSlug)
   if (!card) return {}
 
   const title = card.seo.metaTitle || `${card.cardName} — Recension & Omdöme`
   const description =
     card.seo.metaDescription || card.verdict || `Läs vår recension av ${card.cardName}.`
-  const canonical = `https://${siteConfig.domain}/kreditkort/${slug}`
+  const canonical = `https://${siteConfig.domain}/${reviewPath}/${cardSlug}`
 
   return {
     title,
@@ -43,8 +44,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function CardDetailPage({ params }: Props) {
-  const { slug } = await params
-  const card = await getCreditCard(slug)
+  const { slug, card: cardSlug } = await params
+  const reviewPath = await getReviewPath()
+  // This route only serves the configured review segment; anything else is 404.
+  if (slug !== reviewPath) notFound()
+
+  const card = await getCreditCard(cardSlug)
   if (!card) notFound()
 
   const allFacts: Array<[string, string | undefined]> = [
@@ -68,7 +73,7 @@ export default async function CardDetailPage({ params }: Props) {
 
   return (
     <>
-      <CreditCardSchema card={card} />
+      <CreditCardSchema card={card} reviewPath={reviewPath} />
 
       <div className="mx-auto max-w-4xl px-4 pb-10 pt-6">
         <Breadcrumbs items={[{ label: 'Kreditkort', href: '/' }, { label: card.cardName }]} className="mb-6" />
@@ -225,25 +230,5 @@ function FeatureBadge({ label }: { label: string }) {
     <span className="inline-flex items-center rounded-full bg-green-50 px-3 py-1 text-sm font-medium text-green-700 ring-1 ring-green-200">
       ✓ {label}
     </span>
-  )
-}
-
-function BreadcrumbSchema({ cardName, slug }: { cardName: string; slug: string }) {
-  const schema = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Hem', item: `https://${siteConfig.domain}` },
-      { '@type': 'ListItem', position: 2, name: 'Kreditkort', item: `https://${siteConfig.domain}` },
-      {
-        '@type': 'ListItem',
-        position: 3,
-        name: cardName,
-        item: `https://${siteConfig.domain}/kreditkort/${slug}`,
-      },
-    ],
-  }
-  return (
-    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
   )
 }

@@ -1,10 +1,10 @@
 import type { MetadataRoute } from 'next'
-import { getCreditCards } from '@/lib/payload'
+import { getCreditCards, getReviewPath } from '@/lib/payload'
 import siteConfig from '@/siteConfig'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = `https://${siteConfig.domain}`
-  const cards = await getCreditCards()
+  const [cards, reviewPath] = await Promise.all([getCreditCards(), getReviewPath()])
 
   const staticPages: MetadataRoute.Sitemap = [
     {
@@ -28,7 +28,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]
 
   const cardPages: MetadataRoute.Sitemap = cards.map((card) => ({
-    url: `${base}/kreditkort/${card.slug}`,
+    url: `${base}/${reviewPath}/${card.slug}`,
     lastModified: card.lastVerified ? new Date(card.lastVerified) : new Date(),
     changeFrequency: 'weekly' as const,
     priority: card.featured ? 0.9 : 0.7,

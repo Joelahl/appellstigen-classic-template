@@ -38,7 +38,13 @@ export function BestCardBox({
 }
 
 /** Comparison table driven by the curated toplist cards. */
-export function ComparisonTable({ cards }: { cards: CreditCard[] }) {
+export function ComparisonTable({
+  cards,
+  reviewPath = 'kreditkort',
+}: {
+  cards: CreditCard[]
+  reviewPath?: string
+}) {
   if (!cards?.length) return null
   return (
     <section className="overflow-x-auto">
@@ -60,7 +66,7 @@ export function ComparisonTable({ cards }: { cards: CreditCard[] }) {
             <tr key={c.id} className="border-b border-gray-100 align-middle">
               <td className="py-3 pr-4 font-bold text-blue-700">{i + 1}</td>
               <td className="py-3 pr-4">
-                <Link href={`/kreditkort/${c.slug}`} className="font-semibold text-gray-900 hover:text-blue-700">
+                <Link href={`/${reviewPath}/${c.slug}`} className="font-semibold text-gray-900 hover:text-blue-700">
                   {c.cardName}
                 </Link>
               </td>

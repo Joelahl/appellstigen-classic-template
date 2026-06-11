@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import type { LayoutBlock, CreditCard } from '@/types'
-import { getCreditCards, getFeaturedCards } from '@/lib/payload'
+import { getCreditCards, getFeaturedCards, getReviewPath } from '@/lib/payload'
 import CreditCardCard from './CreditCardCard'
 
 /** Renders a Pages `layout` array of blocks. */
@@ -91,6 +91,7 @@ async function Block({ block }: { block: LayoutBlock }) {
           .map((c) => ({ ...(c as unknown as CreditCard) }))
       } else cards = (await getCreditCards()).slice(0, limit)
 
+      const reviewPath = await getReviewPath()
       return (
         <section>
           {block.heading ? (
@@ -98,7 +99,7 @@ async function Block({ block }: { block: LayoutBlock }) {
           ) : null}
           <div className="space-y-4">
             {cards.map((card, i) => (
-              <CreditCardCard key={card.id || i} card={card} rank={i + 1} />
+              <CreditCardCard key={card.id || i} card={card} rank={i + 1} reviewPath={reviewPath} />
             ))}
           </div>
         </section>

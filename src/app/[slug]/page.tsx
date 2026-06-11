@@ -110,13 +110,13 @@ export default async function GenericPage({ params }: Props) {
               </h2>
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
                 {toplist.map((card, i) => (
-                  <CreditCardCard key={card.id} card={card} rank={i + 1} />
+                  <CreditCardCard key={card.id} card={card} rank={i + 1} reviewPath={site?.reviewSlug} />
                 ))}
               </div>
             </section>
           )}
 
-          {toplist.length > 0 && <ComparisonTable cards={toplist} />}
+          {toplist.length > 0 && <ComparisonTable cards={toplist} reviewPath={site?.reviewSlug} />}
         </div>
       )}
 

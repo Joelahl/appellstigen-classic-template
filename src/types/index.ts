@@ -108,6 +108,8 @@ export interface SiteData {
   id: string
   name: string
   domain: string
+  /** URL segment for individual reviews, e.g. "kreditkort" → /kreditkort/<slug>. */
+  reviewSlug: string
   branding: {
     siteName?: string
     tagline?: string

@@ -241,6 +241,7 @@ function mapSite(raw: Record<string, unknown>): SiteData {
     id: String(raw.id),
     name: raw.name as string,
     domain: raw.domain as string,
+    reviewSlug: (raw.reviewSlug as string) || 'kreditkort',
     branding: {
       siteName: b.siteName as string | undefined,
       tagline: b.tagline as string | undefined,
@@ -332,6 +333,14 @@ export async function getSite(): Promise<SiteData | null> {
     data = await fetchFromCMS<Res>(`/sites?limit=1&depth=1`)
   }
   return data.docs?.length ? mapSite(data.docs[0]) : null
+}
+
+/** The per-site URL segment for review pages (e.g. "kreditkort").
+ *  Reads from the CMS Site; getSite() is fetch-cached so this is cheap to call
+ *  from multiple components within a request. */
+export async function getReviewPath(): Promise<string> {
+  const site = await getSite()
+  return site?.reviewSlug || 'kreditkort'
 }
 
 export async function getAuthors(limit = 12): Promise<Author[]> {
