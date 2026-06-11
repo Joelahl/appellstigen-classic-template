@@ -187,6 +187,27 @@ function mapCardRel(raw: unknown): CreditCard | undefined {
   return mapCard(raw as Record<string, unknown>)
 }
 
+/** Resolve any Lexical richText fields inside layout blocks to HTML strings. */
+function mapLayout(layout: unknown): Page['layout'] {
+  if (!Array.isArray(layout)) return []
+  return layout.map((block) => {
+    if (!block || typeof block !== 'object') return block as Page['layout'][number]
+    const b = block as Record<string, unknown>
+    if (b.blockType === 'richText' && b.content) {
+      // Lexical richText block — serialize Lexical content → HTML string
+      return { ...b, content: lexicalToHtml(b.content) }
+    }
+    if (b.blockType === 'image' && b.image) {
+      // Resolve uploaded image to absolute URL
+      return { ...b, imageUrl: resolveImage(b.image) }
+    }
+    if (b.blockType === 'imageText' && b.image) {
+      return { ...b, imageUrl: resolveImage(b.image) }
+    }
+    return b as Page['layout'][number]
+  })
+}
+
 function mapPage(raw: Record<string, unknown>): Page {
   const seo = (raw.seo as Record<string, unknown>) || {}
   const toplist = ((raw.toplistCards as unknown[]) || [])
@@ -200,9 +221,10 @@ function mapPage(raw: Record<string, unknown>): Page {
     menuOrder: (raw.menuOrder as number) ?? 0,
     excerpt: raw.excerpt as string | undefined,
     content: raw.content as string | undefined,
-    layout: (raw.layout as Page['layout']) || [],
+    layout: mapLayout(raw.layout),
     author: mapAuthor(raw.author),
     bestCard: mapCardRel(raw.bestCard),
+    bestCardTitle: raw.bestCardTitle as string | undefined,
     bestCardSummary: lexicalToHtml(raw.bestCardSummary),
     toplistCards: toplist,
     updatedAt: raw.updatedAt as string | undefined,
