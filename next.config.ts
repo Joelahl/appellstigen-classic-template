@@ -29,6 +29,13 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      // www → apex (308 permanent), host-agnostic so it works for any site.
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'www\\.(?<rest>.*)' }],
+        destination: 'https://:rest/:path*',
+        permanent: true,
+      },
       // Add 301 redirects here when migrating from WordPress
       // { source: '/old-path', destination: '/new-path', permanent: true },
     ]
