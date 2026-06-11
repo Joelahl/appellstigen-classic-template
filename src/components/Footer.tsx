@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import Link from 'next/link'
 import siteConfig from '@/siteConfig'
 import type { SiteData } from '@/types'
@@ -11,29 +12,46 @@ export default function Footer({ siteName, site }: Props) {
   const year = new Date().getFullYear()
   const name = siteName || siteConfig.siteName
   const links = site?.navigation?.length ? site.navigation : siteConfig.navigation
+  const company = site?.company
+  const footerLogo = site?.branding?.logoLightUrl // light logo for dark bg
 
   return (
-    <footer className="border-t border-gray-200 bg-white">
-      <div className="mx-auto max-w-6xl px-4 py-10">
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          <div>
-            <p className="text-lg font-bold" style={{ color: 'var(--brand, #1d4ed8)' }}>{name}</p>
-            {(site?.branding?.tagline || siteConfig.tagline) && (
-              <p className="mt-1 text-sm text-gray-500">{site?.branding?.tagline || siteConfig.tagline}</p>
+    <footer className="bg-gray-950 text-gray-300">
+      {/* Accent top bar for contrast */}
+      <div className="h-1 w-full" style={{ background: 'var(--brand-accent, #f59e0b)' }} />
+
+      <div className="mx-auto max-w-6xl px-4 py-14">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+          {/* Brand + company */}
+          <div className="sm:col-span-2 lg:col-span-1">
+            {footerLogo ? (
+              <img src={footerLogo} alt={name} className="h-9 w-auto" />
+            ) : (
+              <p className="text-xl font-bold text-white">{name}</p>
             )}
-            {site?.about?.text && (
-              <p className="mt-3 text-xs leading-relaxed text-gray-400 line-clamp-4">{site.about.text}</p>
+            {(site?.branding?.tagline || siteConfig.tagline) && (
+              <p className="mt-3 text-sm text-gray-400">{site?.branding?.tagline || siteConfig.tagline}</p>
+            )}
+            {company?.legalName && (
+              <p className="mt-4 text-sm font-semibold text-white">{company.legalName}</p>
+            )}
+            {company?.orgNumber && (
+              <p className="text-xs text-gray-500">Org.nr {company.orgNumber}</p>
+            )}
+            {company?.address && (
+              <p className="mt-1 whitespace-pre-line text-xs text-gray-500">{company.address}</p>
             )}
           </div>
 
+          {/* Navigation */}
           <div>
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
-              Navigation
+            <p className="mb-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--brand-accent, #f59e0b)' }}>
+              Navigering
             </p>
-            <ul className="space-y-2">
+            <ul className="space-y-2.5">
               {links.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-sm text-gray-600 hover:text-blue-700">
+                  <Link href={link.href} className="text-sm text-gray-400 transition hover:text-white">
                     {link.label}
                   </Link>
                 </li>
@@ -41,28 +59,57 @@ export default function Footer({ siteName, site }: Props) {
             </ul>
           </div>
 
+          {/* Contact + opening hours */}
           <div>
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
+            <p className="mb-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--brand-accent, #f59e0b)' }}>
+              Kontakt
+            </p>
+            <ul className="space-y-2.5 text-sm text-gray-400">
+              {company?.email && (
+                <li>
+                  <a href={`mailto:${company.email}`} className="transition hover:text-white">
+                    {company.email}
+                  </a>
+                </li>
+              )}
+              {company?.phone && (
+                <li>
+                  <a href={`tel:${company.phone.replace(/\s/g, '')}`} className="transition hover:text-white">
+                    {company.phone}
+                  </a>
+                </li>
+              )}
+            </ul>
+            {company?.openingHours && (
+              <>
+                <p className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--brand-accent, #f59e0b)' }}>
+                  Öppettider
+                </p>
+                <p className="whitespace-pre-line text-sm text-gray-400">{company.openingHours}</p>
+              </>
+            )}
+          </div>
+
+          {/* Legal */}
+          <div>
+            <p className="mb-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--brand-accent, #f59e0b)' }}>
               Juridiskt
             </p>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li><Link href="/integritetspolicy" className="hover:text-blue-700">Integritetspolicy</Link></li>
-              <li><Link href="/cookies" className="hover:text-blue-700">Cookiepolicy</Link></li>
-              <li><Link href="/om-oss" className="hover:text-blue-700">Om oss</Link></li>
+            <ul className="space-y-2.5 text-sm text-gray-400">
+              <li><Link href="/integritetspolicy" className="transition hover:text-white">Integritetspolicy</Link></li>
+              <li><Link href="/anvandarvillkor" className="transition hover:text-white">Användarvillkor</Link></li>
+              <li><Link href="/om-oss" className="transition hover:text-white">Om oss</Link></li>
             </ul>
           </div>
-
-          <div>
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
-              Information
-            </p>
-            <p className="text-xs text-gray-400 leading-relaxed">{siteConfig.disclaimer}</p>
-          </div>
         </div>
 
-        <div className="mt-8 border-t border-gray-100 pt-6 text-center text-xs text-gray-400">
-          © {year} {siteConfig.siteName}. Alla rättigheter förbehållna.
-        </div>
+        {/* Disclaimer */}
+        <p className="mt-12 border-t border-white/10 pt-6 text-xs leading-relaxed text-gray-500">
+          {siteConfig.disclaimer}
+        </p>
+        <p className="mt-4 text-xs text-gray-500">
+          © {year} {company?.legalName || name}. Alla rättigheter förbehållna. · 18+ · Spela ansvarsfullt
+        </p>
       </div>
     </footer>
   )

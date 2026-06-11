@@ -112,11 +112,20 @@ export interface SiteData {
     siteName?: string
     tagline?: string
     logoUrl?: string
+    logoLightUrl?: string
     primaryColor?: string
     accentColor?: string
     faviconUrl?: string
     heroImageUrl?: string
     backgroundImageUrl?: string
+  }
+  company?: {
+    legalName?: string
+    orgNumber?: string
+    address?: string
+    email?: string
+    phone?: string
+    openingHours?: string
   }
   about?: { heading?: string; text?: string }
   navigation?: Array<{ label: string; href: string }>

@@ -226,12 +226,24 @@ function mapSite(raw: Record<string, unknown>): SiteData {
       siteName: b.siteName as string | undefined,
       tagline: b.tagline as string | undefined,
       logoUrl: resolveImage(b.logo),
+      logoLightUrl: resolveImage(b.logoLight) || resolveImage(b.logoLightUrl),
       primaryColor: b.primaryColor as string | undefined,
       accentColor: b.accentColor as string | undefined,
       faviconUrl: resolveImage(b.faviconImage) || resolveImage(b.faviconUrl),
       heroImageUrl: resolveImage(b.heroImage) || resolveImage(b.heroImageUrl),
       backgroundImageUrl: resolveImage(b.backgroundImage) || resolveImage(b.backgroundImageUrl),
     },
+    company: (() => {
+      const c = (raw.company as Record<string, unknown>) || {}
+      return {
+        legalName: c.legalName as string | undefined,
+        orgNumber: c.orgNumber as string | undefined,
+        address: c.address as string | undefined,
+        email: c.email as string | undefined,
+        phone: c.phone as string | undefined,
+        openingHours: c.openingHours as string | undefined,
+      }
+    })(),
     about: { heading: about.heading as string | undefined, text: lexicalToHtml(about.text) },
     navigation: (raw.navigation as Array<{ label: string; href: string }>) || [],
   }
