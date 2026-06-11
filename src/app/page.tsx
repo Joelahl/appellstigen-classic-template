@@ -65,7 +65,8 @@ export default async function HomePage() {
             {taglineRest.join(' ')}
           </h1>
           <p className="mt-4 max-w-2xl text-lg text-gray-700">
-            Vi jämför {cards.length} kreditkort efter avgift, ränta, bonus och försäkringar.
+            {home?.excerpt ||
+              `Vi jämför ${cards.length} kreditkort efter avgift, ränta, bonus och försäkringar.`}
           </p>
 
           {/* Primary CTA — jump to the toplist on the same page */}

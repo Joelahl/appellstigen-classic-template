@@ -33,7 +33,9 @@ function fmtDate(d?: string) {
   return new Date(d).toLocaleDateString('sv-SE', { year: 'numeric', month: 'long', day: 'numeric' })
 }
 
-/** Rich byline: avatar · name + role badge · published/updated dates. */
+/** Rich byline: avatar · name + role badge · "Uppdaterad" date (only shown once
+ *  the page has actually been edited after publishing). Publish/update dates are
+ *  always emitted as WebPage schema for SEO, regardless of what's shown. */
 export function AuthorByline({
   author,
   updatedAt,
@@ -43,9 +45,42 @@ export function AuthorByline({
   updatedAt?: string
   createdAt?: string
 }) {
-  if (!author && !updatedAt && !createdAt) return null
+  // Treat as "updated" only when the modification is meaningfully after publish
+  // (Payload sets updatedAt == createdAt on first publish).
+  const wasUpdated =
+    !!updatedAt &&
+    (!createdAt ||
+      new Date(updatedAt).getTime() - new Date(createdAt).getTime() > 60_000)
+
+  // SEO: WebPage datePublished / dateModified — emitted even if not shown.
+  const dateSchema =
+    createdAt || updatedAt
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'WebPage',
+          ...(createdAt && { datePublished: createdAt }),
+          ...(updatedAt && { dateModified: updatedAt }),
+        }
+      : null
+
+  if (!author && !wasUpdated) {
+    // Nothing visible, but still emit the date schema if we have dates.
+    return dateSchema ? (
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(dateSchema) }}
+      />
+    ) : null
+  }
+
   return (
     <div className="flex items-center gap-3">
+      {dateSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(dateSchema) }}
+        />
+      )}
       {author && <Avatar author={author} size={40} />}
       <div className="text-sm">
         {author && (
@@ -61,11 +96,12 @@ export function AuthorByline({
             )}
           </div>
         )}
-        <div className="mt-0.5 text-xs uppercase tracking-wide text-gray-500">
-          {createdAt && <>Publicerad {fmtDate(createdAt)}</>}
-          {createdAt && updatedAt && <span className="px-1.5">·</span>}
-          {updatedAt && <>Uppdaterad {fmtDate(updatedAt)}</>}
-        </div>
+        {wasUpdated && (
+          <div className="mt-0.5 text-xs uppercase tracking-wide text-gray-500">
+            Uppdaterad{' '}
+            <time dateTime={updatedAt}>{fmtDate(updatedAt)}</time>
+          </div>
+        )}
       </div>
     </div>
   )
