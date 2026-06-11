@@ -343,6 +343,33 @@ export async function getReviewPath(): Promise<string> {
   return site?.reviewSlug || 'kreditkort'
 }
 
+// ── Affiliate redirects ───────────────────────────────────────────────────────
+export interface AffiliateLink {
+  slug: string
+  targetUrl: string
+  label: string
+  card?: CreditCard
+}
+
+/** Look up an active /till/<slug> redirect target from the CMS. */
+export async function getAffiliateLink(slug: string): Promise<AffiliateLink | null> {
+  type Res = { docs: Record<string, unknown>[] }
+  const data = await fetchFromCMS<Res>(
+    `/affiliate-links?where[slug][equals]=${encodeURIComponent(slug)}` +
+      `&where[active][equals]=true&limit=1&depth=1`,
+  )
+  const raw = data.docs?.[0]
+  if (!raw) return null
+  const target = raw.targetUrl as string | undefined
+  if (!target) return null
+  return {
+    slug: raw.slug as string,
+    targetUrl: target,
+    label: (raw.label as string) || (raw.slug as string),
+    card: mapCardRel(raw.card),
+  }
+}
+
 export async function getAuthors(limit = 12): Promise<Author[]> {
   type Res = { docs: Record<string, unknown>[] }
   const data = await fetchFromCMS<Res>(`/authors?limit=${limit}&depth=0`)
