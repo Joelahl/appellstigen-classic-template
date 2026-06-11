@@ -1,7 +1,14 @@
 import type { NextConfig } from 'next'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  // Pin the standalone tracing root to this project so the build doesn't get
+  // confused by parent lockfiles (otherwise server.js lands in the wrong path).
+  outputFileTracingRoot: dirname,
   images: {
     remotePatterns: [
       {
