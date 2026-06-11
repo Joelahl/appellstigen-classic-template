@@ -8,15 +8,26 @@ import siteConfig from '@/siteConfig'
 
 export const revalidate = 300
 
-export const metadata: Metadata = {
-  title: siteConfig.defaultTitle,
-  description: siteConfig.defaultDescription,
-  openGraph: {
-    title: siteConfig.defaultTitle,
-    description: siteConfig.defaultDescription,
-    url: `https://${siteConfig.domain}`,
-  },
-  alternates: { canonical: `https://${siteConfig.domain}` },
+// Homepage SEO comes from the CMS homepage page (seo.metaTitle/metaDescription),
+// falling back to siteConfig. `title.absolute` bypasses the layout titleTemplate
+// so the CMS title is used verbatim.
+export async function generateMetadata(): Promise<Metadata> {
+  const pages = await getPages()
+  const home = pages.find((p) => p.pageType === 'homepage')
+  const title = home?.seo.metaTitle || home?.title || siteConfig.defaultTitle
+  const description = home?.seo.metaDescription || home?.excerpt || siteConfig.defaultDescription
+  const url = `https://${siteConfig.domain}`
+  return {
+    title: { absolute: title },
+    description,
+    openGraph: {
+      title,
+      description,
+      url,
+      ...(home?.seo.ogImageUrl && { images: [{ url: home.seo.ogImageUrl }] }),
+    },
+    alternates: { canonical: url },
+  }
 }
 
 const FEATURES = [
