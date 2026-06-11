@@ -110,6 +110,8 @@ export interface SiteData {
   domain: string
   /** URL segment for individual reviews, e.g. "kreditkort" → /kreditkort/<slug>. */
   reviewSlug: string
+  /** URL segment for affiliate redirects, e.g. "till" → /till/<slug>. */
+  outboundSlug: string
   branding: {
     siteName?: string
     tagline?: string

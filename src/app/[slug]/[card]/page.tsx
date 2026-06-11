@@ -1,10 +1,11 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
-import { getCreditCard, getReviewPath } from '@/lib/payload'
+import { getCreditCard, getSite, getAffiliateLink } from '@/lib/payload'
 import StarRating from '@/components/StarRating'
 import CreditCardSchema from '@/components/CreditCardSchema'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import AffiliateInterstitial from '@/components/AffiliateInterstitial'
 import siteConfig from '@/siteConfig'
 
 interface Props {
@@ -19,7 +20,16 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, card: cardSlug } = await params
-  const reviewPath = await getReviewPath()
+  const site = await getSite()
+  const reviewPath = site?.reviewSlug || 'kreditkort'
+  const outboundPath = site?.outboundSlug || 'till'
+
+  // Affiliate interstitial — never indexed.
+  if (slug === outboundPath) {
+    const link = await getAffiliateLink(cardSlug, site?.id)
+    return { title: link ? 'Omdirigerar…' : 'Sidan finns inte', robots: { index: false, follow: false } }
+  }
+
   if (slug !== reviewPath) return {}
   const card = await getCreditCard(cardSlug)
   if (!card) return {}
@@ -45,8 +55,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function CardDetailPage({ params }: Props) {
   const { slug, card: cardSlug } = await params
-  const reviewPath = await getReviewPath()
-  // This route only serves the configured review segment; anything else is 404.
+  const site = await getSite()
+  const reviewPath = site?.reviewSlug || 'kreditkort'
+  const outboundPath = site?.outboundSlug || 'till'
+
+  // Affiliate redirect interstitial (/<outboundSlug>/<slug>).
+  if (slug === outboundPath) {
+    const link = await getAffiliateLink(cardSlug, site?.id)
+    if (!link) notFound()
+    return <AffiliateInterstitial link={link} />
+  }
+
+  // Otherwise this is a review page; only the configured review segment serves.
   if (slug !== reviewPath) notFound()
 
   const card = await getCreditCard(cardSlug)

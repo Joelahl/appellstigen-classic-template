@@ -1,43 +1,21 @@
 /* eslint-disable @next/next/no-img-element */
-import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
-import { getAffiliateLink } from '@/lib/payload'
+import type { AffiliateLink } from '@/lib/payload'
 import RedirectCountdown from '@/components/RedirectCountdown'
 import siteConfig from '@/siteConfig'
 
-interface Props {
-  params: Promise<{ slug: string }>
-}
-
-// On-demand: render on first request, no static prebuild.
-export const dynamicParams = true
-export async function generateStaticParams() {
-  return []
-}
-
-const DELAY_SECONDS = 2
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params
-  const link = await getAffiliateLink(slug)
-  return {
-    title: link ? 'Omdirigerar…' : 'Sidan finns inte',
-    // Interstitials must never be indexed.
-    robots: { index: false, follow: false },
-  }
-}
-
-export default async function RedirectPage({ params }: Props) {
-  const { slug } = await params
-  const link = await getAffiliateLink(slug)
-  if (!link) notFound()
-
+/** Branded "you're being redirected" interstitial with a countdown. */
+export default function AffiliateInterstitial({
+  link,
+  seconds = 2,
+}: {
+  link: AffiliateLink
+  seconds?: number
+}) {
   const name = link.card?.cardName || link.label
-
   return (
     <>
       {/* No-JS fallback: redirect via meta refresh after the same delay. */}
-      <meta httpEquiv="refresh" content={`${DELAY_SECONDS};url=${link.targetUrl}`} />
+      <meta httpEquiv="refresh" content={`${seconds};url=${link.targetUrl}`} />
 
       <div className="mx-auto flex max-w-lg flex-col items-center px-4 py-20 text-center">
         {link.card?.cardImageUrl && (
@@ -52,7 +30,7 @@ export default async function RedirectPage({ params }: Props) {
         <h1 className="text-2xl font-bold text-gray-900">Du skickas vidare…</h1>
         <p className="mt-2 text-gray-600">Vi skickar dig nu vidare till {name}.</p>
 
-        <RedirectCountdown targetUrl={link.targetUrl} seconds={DELAY_SECONDS} />
+        <RedirectCountdown targetUrl={link.targetUrl} seconds={seconds} />
 
         <a
           href={link.targetUrl}

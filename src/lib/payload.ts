@@ -242,6 +242,7 @@ function mapSite(raw: Record<string, unknown>): SiteData {
     name: raw.name as string,
     domain: raw.domain as string,
     reviewSlug: (raw.reviewSlug as string) || 'kreditkort',
+    outboundSlug: (raw.outboundSlug as string) || 'till',
     branding: {
       siteName: b.siteName as string | undefined,
       tagline: b.tagline as string | undefined,
@@ -351,12 +352,14 @@ export interface AffiliateLink {
   card?: CreditCard
 }
 
-/** Look up an active /till/<slug> redirect target from the CMS. */
-export async function getAffiliateLink(slug: string): Promise<AffiliateLink | null> {
+/** Look up an active redirect target for the current site from the CMS.
+ *  Scoped by site so the same slug can differ across sites. */
+export async function getAffiliateLink(slug: string, siteId?: string): Promise<AffiliateLink | null> {
   type Res = { docs: Record<string, unknown>[] }
+  const siteFilter = siteId ? `&where[site][equals]=${encodeURIComponent(siteId)}` : ''
   const data = await fetchFromCMS<Res>(
     `/affiliate-links?where[slug][equals]=${encodeURIComponent(slug)}` +
-      `&where[active][equals]=true&limit=1&depth=1`,
+      `&where[active][equals]=true${siteFilter}&limit=1&depth=1`,
   )
   const raw = data.docs?.[0]
   if (!raw) return null
