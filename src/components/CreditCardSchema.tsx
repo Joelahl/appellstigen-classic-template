@@ -1,14 +1,14 @@
 import type { CreditCard } from '@/types'
-import siteConfig from '@/siteConfig'
 
 interface Props {
   card: CreditCard
-  reviewPath?: string
 }
 
-export default function CreditCardSchema({ card, reviewPath = 'kreditkort' }: Props) {
+export default function CreditCardSchema({ card }: Props) {
   const hasRating = typeof card.editorRating === 'number' && card.editorRating > 0
 
+  // Credit cards aren't priced products, so no Offer/price node (a price of "0"
+  // is misleading). Product stays rich-result-eligible via aggregateRating.
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -16,13 +16,6 @@ export default function CreditCardSchema({ card, reviewPath = 'kreditkort' }: Pr
     ...(card.issuer && { brand: { '@type': 'Brand', name: card.issuer } }),
     description: card.verdict || card.seo.metaDescription || card.bestFor,
     ...(card.cardImageUrl && { image: card.cardImageUrl }),
-    offers: {
-      '@type': 'Offer',
-      url: `https://${siteConfig.domain}/${reviewPath}/${card.slug}`,
-      availability: 'https://schema.org/InStock',
-      priceCurrency: 'SEK',
-      price: '0',
-    },
     ...(hasRating && {
       aggregateRating: {
         '@type': 'AggregateRating',

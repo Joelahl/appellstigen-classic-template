@@ -34,14 +34,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const card = await getCreditCard(cardSlug)
   if (!card) return {}
 
-  const title = card.seo.metaTitle || `${card.cardName} — Recension & Omdöme`
+  const metaTitle = card.seo.metaTitle
+  const title = metaTitle || `${card.cardName} — Recension & Omdöme`
   const description =
     card.seo.metaDescription || card.verdict || `Läs vår recension av ${card.cardName}.`
   const canonical = `https://${siteConfig.domain}/${reviewPath}/${cardSlug}`
   const ogImage = card.seo.ogImageUrl || card.cardImageUrl || siteConfig.defaultOgImageUrl
 
   return {
-    title,
+    // CMS metaTitle is already complete — use it verbatim (no "| brand" suffix).
+    title: metaTitle ? { absolute: metaTitle } : title,
     description,
     openGraph: {
       title,
@@ -94,7 +96,7 @@ export default async function CardDetailPage({ params }: Props) {
 
   return (
     <>
-      <CreditCardSchema card={card} reviewPath={reviewPath} />
+      <CreditCardSchema card={card} />
 
       <div className="mx-auto max-w-4xl px-4 pb-10 pt-6">
         <Breadcrumbs items={[{ label: 'Kreditkort', href: '/' }, { label: card.cardName }]} className="mb-6" />

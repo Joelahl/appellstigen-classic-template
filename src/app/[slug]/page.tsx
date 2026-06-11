@@ -22,11 +22,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const page = await getPage(slug)
   if (!page) return {}
-  const title = page.seo.metaTitle || page.title
+  const metaTitle = page.seo.metaTitle
+  const title = metaTitle || page.title
   const description = page.seo.metaDescription || page.excerpt
   const canonical = `https://${siteConfig.domain}/${slug}`
   return {
-    title,
+    // Use the CMS metaTitle verbatim (no "| brand" suffix) when present.
+    title: metaTitle ? { absolute: metaTitle } : title,
     description,
     openGraph: {
       title,
