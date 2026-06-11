@@ -38,6 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description =
     card.seo.metaDescription || card.verdict || `Läs vår recension av ${card.cardName}.`
   const canonical = `https://${siteConfig.domain}/${reviewPath}/${cardSlug}`
+  const ogImage = card.seo.ogImageUrl || card.cardImageUrl || siteConfig.defaultOgImageUrl
 
   return {
     title,
@@ -46,9 +47,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title,
       description,
       url: canonical,
-      ...(card.seo.ogImageUrl && { images: [{ url: card.seo.ogImageUrl }] }),
+      ...(ogImage && { images: [{ url: ogImage }] }),
     },
-    twitter: { card: 'summary_large_image', title, description },
+    twitter: { card: 'summary_large_image', title, description, ...(ogImage && { images: [ogImage] }) },
     alternates: { canonical },
   }
 }

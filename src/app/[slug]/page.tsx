@@ -32,8 +32,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title,
       description,
       url: canonical,
-      ...(page.seo.ogImageUrl && { images: [{ url: page.seo.ogImageUrl }] }),
+      ...((page.seo.ogImageUrl || siteConfig.defaultOgImageUrl) && {
+        images: [{ url: (page.seo.ogImageUrl || siteConfig.defaultOgImageUrl) as string }],
+      }),
     },
+    twitter: { card: 'summary_large_image', title: title as string, description },
     alternates: { canonical },
   }
 }

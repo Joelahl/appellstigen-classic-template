@@ -40,6 +40,29 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const favicon = site?.branding?.faviconUrl
   const nav = site?.navigation?.length ? site.navigation : siteConfig.navigation
   const siteName = site?.branding?.siteName || siteConfig.siteName
+  const origin = `https://${siteConfig.domain}`
+
+  // Site-wide brand structured data (Organization + WebSite).
+  const brandSchema = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Organization',
+        '@id': `${origin}/#organization`,
+        name: siteName,
+        url: origin,
+        ...(site?.branding?.logoUrl && { logo: site.branding.logoUrl }),
+      },
+      {
+        '@type': 'WebSite',
+        '@id': `${origin}/#website`,
+        url: origin,
+        name: siteName,
+        inLanguage: siteConfig.locale,
+        publisher: { '@id': `${origin}/#organization` },
+      },
+    ],
+  }
 
   return (
     <html lang={siteConfig.locale}>
@@ -48,6 +71,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {/* Per-site theme tokens. --hero-bg is a light tint of the accent color
             (e.g. accent #5D9B01 -> ~#EAEEE5), scalable to any accent. */}
         <style>{`:root{--brand:${primary};--brand-accent:${accent};--hero-bg:color-mix(in srgb, ${accent} 13%, white);}`}</style>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(brandSchema) }}
+        />
       </head>
       <body className={`${inter.className} bg-gray-50 text-gray-900 antialiased`}>
         <Header siteName={siteName} logoUrl={site?.branding?.logoUrl} nav={nav} />

@@ -17,6 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const title = home?.seo.metaTitle || home?.title || siteConfig.defaultTitle
   const description = home?.seo.metaDescription || home?.excerpt || siteConfig.defaultDescription
   const url = `https://${siteConfig.domain}`
+  const ogImage = home?.seo.ogImageUrl || siteConfig.defaultOgImageUrl
   return {
     title: { absolute: title },
     description,
@@ -24,8 +25,9 @@ export async function generateMetadata(): Promise<Metadata> {
       title,
       description,
       url,
-      ...(home?.seo.ogImageUrl && { images: [{ url: home.seo.ogImageUrl }] }),
+      ...(ogImage && { images: [{ url: ogImage }] }),
     },
+    twitter: { card: 'summary_large_image', title, description, ...(ogImage && { images: [ogImage] }) },
     alternates: { canonical: url },
   }
 }

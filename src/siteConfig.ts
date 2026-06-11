@@ -25,6 +25,9 @@ const siteConfig: SiteConfig = {
   defaultTitle: `Bästa Kreditkort ${new Date().getFullYear()} — Jämför & Hitta Rätt Kort`,
   defaultDescription:
     'Jämför Sveriges bästa kreditkort. Vi listar årsavgifter, räntor, bonus och försäkringar så att du enkelt hittar kortet som passar dig.',
+  // Default social-share image (1200×630). Set NEXT_PUBLIC_OG_IMAGE_URL to a
+  // hosted image; pages/cards override with their own seo.ogImageUrl/card image.
+  defaultOgImageUrl: process.env.NEXT_PUBLIC_OG_IMAGE_URL || undefined,
 
   navigation: [
     { label: 'Jämför kort', href: '/' },
