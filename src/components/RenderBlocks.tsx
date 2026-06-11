@@ -17,6 +17,7 @@ export default async function RenderBlocks({ blocks }: { blocks: LayoutBlock[] }
 
 async function Block({ block }: { block: LayoutBlock }) {
   switch (block.blockType) {
+    // Legacy raw-HTML block (migrated WordPress content)
     case 'richText':
       return block.html ? (
         <article
@@ -24,6 +25,42 @@ async function Block({ block }: { block: LayoutBlock }) {
           dangerouslySetInnerHTML={{ __html: block.html as string }}
         />
       ) : null
+
+    // Lexical rich-text block (content serialized to HTML in mapLayout)
+    case 'prose':
+      return block.content ? (
+        <article
+          className="prose prose-sm sm:prose max-w-none prose-headings:font-semibold prose-a:text-blue-700"
+          dangerouslySetInnerHTML={{ __html: block.content as string }}
+        />
+      ) : null
+
+    // Standalone image block (upload, with caption + size)
+    case 'image': {
+      const src = (block.imageUrl as string) || (block.image as string)
+      if (!src) return null
+      const sizeClass =
+        block.size === 'half'
+          ? 'max-w-xl mx-auto'
+          : block.size === 'small'
+            ? 'max-w-sm mx-auto'
+            : 'w-full'
+      return (
+        <figure className={sizeClass}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={src}
+            alt={(block.alt as string) || ''}
+            className="w-full rounded-xl object-cover"
+          />
+          {block.caption ? (
+            <figcaption className="mt-2 text-center text-sm text-gray-500">
+              {block.caption as string}
+            </figcaption>
+          ) : null}
+        </figure>
+      )
+    }
 
     case 'hero':
       return (

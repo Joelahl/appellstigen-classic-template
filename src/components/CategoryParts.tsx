@@ -5,11 +5,15 @@ import type { CreditCard } from '@/types'
 export function BestCardBox({
   summary,
   categoryTitle,
+  title,
 }: {
   summary?: string
   categoryTitle: string
+  /** Optional CMS override heading (bestCardTitle). */
+  title?: string
 }) {
   if (!summary) return null
+  const heading = title || `Vilket är det bästa ${categoryTitle.toLowerCase()}?`
   return (
     <section
       className="rounded-lg border bg-white p-6"
@@ -24,9 +28,7 @@ export function BestCardBox({
       >
         Expertens rekommendation
       </span>
-      <h2 className="mt-3 text-xl font-bold text-gray-900">
-        Vilket är det bästa {categoryTitle.toLowerCase()}?
-      </h2>
+      <h2 className="mt-3 text-xl font-bold text-gray-900">{heading}</h2>
       <div
         className="prose prose-sm mt-3 max-w-none text-gray-700 prose-a:text-blue-700"
         dangerouslySetInnerHTML={{ __html: summary }}

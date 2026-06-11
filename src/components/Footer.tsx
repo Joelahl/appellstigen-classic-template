@@ -11,9 +11,12 @@ interface Props {
 export default function Footer({ siteName, site }: Props) {
   const year = new Date().getFullYear()
   const name = siteName || siteConfig.siteName
+  const domain = site?.domain || siteConfig.domain
   const links = site?.navigation?.length ? site.navigation : siteConfig.navigation
   const company = site?.company
-  const footerLogo = site?.branding?.logoLightUrl // light logo for dark bg
+  // Prefer the light (inverted) logo for the dark footer; fall back to the
+  // regular logo so the logo always shows if one is uploaded.
+  const footerLogo = site?.branding?.logoLightUrl || site?.branding?.logoUrl
 
   return (
     <footer className="bg-gray-950 text-gray-300">
@@ -24,11 +27,14 @@ export default function Footer({ siteName, site }: Props) {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand + company */}
           <div className="sm:col-span-2 lg:col-span-1">
-            {footerLogo ? (
+            {footerLogo && (
               <img src={footerLogo} alt={name} className="h-9 w-auto" />
-            ) : (
-              <p className="text-xl font-bold text-white">{name}</p>
             )}
+            {/* Always show the site name + URL — under the logo, or alone if none */}
+            <p className={`font-bold text-white ${footerLogo ? 'mt-2 text-base' : 'text-xl'}`}>
+              {name}
+            </p>
+            {domain && <p className="text-xs text-gray-500">{domain}</p>}
             {(site?.branding?.tagline || siteConfig.tagline) && (
               <p className="mt-3 text-sm text-gray-400">{site?.branding?.tagline || siteConfig.tagline}</p>
             )}
