@@ -54,11 +54,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <main>{children}</main>
         <Footer siteName={siteName} site={site} />
 
-        {/* Affiliate disclosure banner */}
-        <div className="bg-amber-50 border-t border-amber-200 py-3 px-4 text-center text-xs text-amber-800">
-          {siteConfig.affiliateDisclosure}
-        </div>
-
         {siteConfig.gaId && (
           <>
             <Script

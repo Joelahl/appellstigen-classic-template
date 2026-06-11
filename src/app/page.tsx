@@ -68,20 +68,24 @@ export default async function HomePage() {
             Vi jämför {cards.length} kreditkort efter avgift, ränta, bonus och försäkringar.
           </p>
 
-          {/* Category grid inside the hero band */}
-          <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {/* Primary CTA — jump to the toplist on the same page */}
+          <a href="#toplist" className="btn-primary mt-6">
+            Jämför kreditkort
+          </a>
+
+          {/* Quick category navigation — small horizontal buttons */}
+          <p className="mt-8 text-xs font-semibold uppercase tracking-wider text-gray-500">
+            Kategorier
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
             {FEATURES.map((f) => (
               <Link
                 key={f.title}
                 href={f.href}
-                className="group rounded-lg bg-white p-5 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition hover:text-blue-700 hover:shadow"
               >
-                <div className="text-3xl">{f.icon}</div>
-                <p className="mt-2 font-semibold text-gray-900 group-hover:text-blue-700">{f.title}</p>
-                <p className="text-sm text-gray-500">{f.desc}</p>
-                <span className="mt-3 inline-block text-sm font-medium" style={{ color: 'var(--brand, #1d4ed8)' }}>
-                  Se korten →
-                </span>
+                <span aria-hidden>{f.icon}</span>
+                {f.title}
               </Link>
             ))}
           </div>
@@ -89,7 +93,7 @@ export default async function HomePage() {
       </section>
 
       {/* Toplist */}
-      <section className="mx-auto max-w-6xl px-4 py-12">
+      <section id="toplist" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-12">
         <h2 className="mb-6 flex flex-wrap items-center gap-3 text-2xl font-bold text-gray-900">
           Bästa kreditkorten {new Date().getFullYear()}
           <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-sm font-medium text-gray-500">
