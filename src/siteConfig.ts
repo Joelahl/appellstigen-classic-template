@@ -21,7 +21,8 @@ const siteConfig: SiteConfig = {
   accentColor: process.env.NEXT_PUBLIC_ACCENT_COLOR || '#f59e0b',
 
   titleTemplate: '%s | Bästa Kreditkort',
-  defaultTitle: 'Bästa Kreditkort 2025 — Jämför & Hitta Rätt Kort',
+  // Year is dynamic so the title never goes stale (e.g. "Bästa Kreditkort 2026").
+  defaultTitle: `Bästa Kreditkort ${new Date().getFullYear()} — Jämför & Hitta Rätt Kort`,
   defaultDescription:
     'Jämför Sveriges bästa kreditkort. Vi listar årsavgifter, räntor, bonus och försäkringar så att du enkelt hittar kortet som passar dig.',
 
