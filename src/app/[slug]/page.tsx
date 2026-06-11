@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
 import { getPage, getSite } from '@/lib/payload'
 import RenderBlocks from '@/components/RenderBlocks'
 import Breadcrumbs from '@/components/Breadcrumbs'
@@ -42,6 +42,9 @@ export default async function GenericPage({ params }: Props) {
   const { slug } = await params
   const [page, site] = await Promise.all([getPage(slug), getSite()])
   if (!page) notFound()
+  // The homepage lives only at `/`. If its slug is requested, redirect there
+  // so there's a single canonical home URL (avoids duplicate content).
+  if (page.pageType === 'homepage') permanentRedirect('/')
 
   const isCategory = page.pageType === 'category'
   const toplist = page.toplistCards || []
