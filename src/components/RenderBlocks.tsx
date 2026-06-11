@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 import Link from 'next/link'
 import type { LayoutBlock, CreditCard } from '@/types'
 import { getCreditCards, getFeaturedCards } from '@/lib/payload'
@@ -18,8 +17,7 @@ export default async function RenderBlocks({ blocks }: { blocks: LayoutBlock[] }
 
 async function Block({ block }: { block: LayoutBlock }) {
   switch (block.blockType) {
-    // ── Migrated HTML (WordPress content, raw paste) ────────────────────────
-    case 'html':
+    case 'richText':
       return block.html ? (
         <article
           className="prose prose-sm sm:prose max-w-none prose-headings:font-semibold prose-a:text-blue-700"
@@ -27,43 +25,6 @@ async function Block({ block }: { block: LayoutBlock }) {
         />
       ) : null
 
-    // ── Lexical rich-text block (new editorial content) ─────────────────────
-    // `content` has already been serialized to an HTML string in mapLayout().
-    case 'richText':
-      return block.content ? (
-        <article
-          className="prose prose-sm sm:prose max-w-none prose-headings:font-semibold prose-a:text-blue-700"
-          dangerouslySetInnerHTML={{ __html: block.content as string }}
-        />
-      ) : null
-
-    // ── Standalone image block ───────────────────────────────────────────────
-    case 'image': {
-      const src = (block.imageUrl as string) || (block.image as string)
-      if (!src) return null
-      const sizeClass =
-        block.size === 'half'
-          ? 'max-w-xl mx-auto'
-          : block.size === 'small'
-            ? 'max-w-sm mx-auto'
-            : 'w-full'
-      return (
-        <figure className={sizeClass}>
-          <img
-            src={src}
-            alt={(block.alt as string) || ''}
-            className="w-full rounded-xl object-cover"
-          />
-          {block.caption && (
-            <figcaption className="mt-2 text-center text-sm text-gray-500">
-              {block.caption as string}
-            </figcaption>
-          )}
-        </figure>
-      )
-    }
-
-    // ── Hero block ───────────────────────────────────────────────────────────
     case 'hero':
       return (
         <section className="rounded-2xl bg-gradient-to-br from-blue-700 to-blue-900 px-6 py-12 text-center text-white">
@@ -79,13 +40,13 @@ async function Block({ block }: { block: LayoutBlock }) {
         </section>
       )
 
-    // ── Card comparison block ────────────────────────────────────────────────
     case 'cardComparison': {
       const source = (block.source as string) || 'all'
       const limit = (block.limit as number) || 10
       let cards: CreditCard[] = []
       if (source === 'featured') cards = await getFeaturedCards(limit)
       else if (source === 'manual') {
+        // manual cards come populated via depth on the page fetch
         const raw = (block.cards as Array<Record<string, unknown>>) || []
         cards = raw
           .filter((c) => typeof c === 'object')
@@ -107,7 +68,6 @@ async function Block({ block }: { block: LayoutBlock }) {
       )
     }
 
-    // ── CTA block ────────────────────────────────────────────────────────────
     case 'cta':
       return (
         <section className="rounded-xl border border-blue-100 bg-blue-50 p-6 text-center">
@@ -125,7 +85,6 @@ async function Block({ block }: { block: LayoutBlock }) {
         </section>
       )
 
-    // ── FAQ block ────────────────────────────────────────────────────────────
     case 'faq': {
       const items = (block.items as Array<{ question: string; answer: string }>) || []
       return (
@@ -145,17 +104,14 @@ async function Block({ block }: { block: LayoutBlock }) {
       )
     }
 
-    // ── Image + text side-by-side ─────────────────────────────────────────────
     case 'imageText': {
       const right = (block.imageSide as string) === 'right'
-      const src = (block.imageUrl as string) || (block.image as string)
       return (
-        <section
-          className={`flex flex-col gap-6 sm:flex-row ${right ? 'sm:flex-row-reverse' : ''} sm:items-center`}
-        >
-          {src ? (
+        <section className={`flex flex-col gap-6 sm:flex-row ${right ? 'sm:flex-row-reverse' : ''} sm:items-center`}>
+          {block.imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={src}
+              src={block.imageUrl as string}
               alt={(block.heading as string) || ''}
               className="w-full rounded-xl object-cover sm:w-1/2"
             />

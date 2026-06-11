@@ -90,11 +90,7 @@ export default async function GenericPage({ params }: Props) {
       {isCategory && (
         <div className="space-y-10">
           {page.bestCardSummary && (
-            <BestCardBox
-              summary={page.bestCardSummary}
-              categoryTitle={page.title}
-              title={page.bestCardTitle}
-            />
+            <BestCardBox summary={page.bestCardSummary} categoryTitle={page.title} />
           )}
 
           {toplist.length > 0 && (

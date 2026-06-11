@@ -87,7 +87,7 @@ export interface CreditCard {
 
 /** A layout block from the Pages `layout` blocks field. */
 export interface LayoutBlock {
-  blockType: 'richText' | 'html' | 'image' | 'hero' | 'cardComparison' | 'cta' | 'faq' | 'imageText'
+  blockType: 'richText' | 'hero' | 'cardComparison' | 'cta' | 'faq' | 'imageText'
   id?: string
   [key: string]: unknown
 }
@@ -143,7 +143,6 @@ export interface Page {
   layout?: LayoutBlock[]
   author?: Author
   bestCard?: CreditCard
-  bestCardTitle?: string
   bestCardSummary?: string
   toplistCards?: CreditCard[]
   updatedAt?: string
