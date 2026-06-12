@@ -1,28 +1,33 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
 
 interface Props {
   links: Array<{ label: string; href: string }>
 }
 
-/** Mobile hamburger that slides a panel in from the right. */
+/** Mobile hamburger that slides a panel in from the right.
+ *  The overlay is portalled to <body> so it escapes the header's
+ *  backdrop-filter containing block (otherwise fixed/h-full collapse to the
+ *  header height and the panel background only covers the top strip). */
 export default function MobileMenu({ links }: Props) {
   const [open, setOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
-  return (
-    <div className="md:hidden">
-      <button
-        onClick={() => setOpen(true)}
-        className="rounded-md p-2 text-gray-600 hover:bg-gray-100"
-        aria-label="Öppna meny"
-      >
-        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-        </svg>
-      </button>
+  useEffect(() => setMounted(true), [])
 
+  // Lock body scroll while the menu is open.
+  useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : ''
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [open])
+
+  const overlay = (
+    <>
       {/* Backdrop */}
       <div
         onClick={() => setOpen(false)}
@@ -63,6 +68,22 @@ export default function MobileMenu({ links }: Props) {
           ))}
         </nav>
       </aside>
+    </>
+  )
+
+  return (
+    <div className="md:hidden">
+      <button
+        onClick={() => setOpen(true)}
+        className="rounded-md p-2 text-gray-600 hover:bg-gray-100"
+        aria-label="Öppna meny"
+      >
+        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>
+      </button>
+
+      {mounted && createPortal(overlay, document.body)}
     </div>
   )
 }

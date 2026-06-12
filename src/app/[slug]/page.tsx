@@ -6,6 +6,7 @@ import Breadcrumbs from '@/components/Breadcrumbs'
 import CreditCardCard from '@/components/CreditCardCard'
 import { AuthorByline, AuthorBio } from '@/components/Author'
 import { BestCardBox, ComparisonTable } from '@/components/CategoryParts'
+import { extractToc } from '@/lib/toc'
 import siteConfig from '@/siteConfig'
 
 interface Props {
@@ -58,6 +59,12 @@ export default async function GenericPage({ params }: Props) {
   const titleLead = tw.slice(0, -1).join(' ')
   const titleAccent = tw[tw.length - 1]
 
+  // Quick-nav: pull H2s from migrated HTML content and anchor-link to them.
+  const usesHtml = !(page.layout && page.layout.length > 0) && !!page.content
+  const { html: contentHtml, items: toc } = usesHtml
+    ? extractToc(page.content as string)
+    : { html: page.content || '', items: [] }
+
   return (
     <>
       {/* Breadcrumb bar — same background as hero, thin lines above and below */}
@@ -90,6 +97,21 @@ export default async function GenericPage({ params }: Props) {
           <div className="mt-5">
             <AuthorByline author={page.author} updatedAt={page.updatedAt} createdAt={page.createdAt} />
           </div>
+
+          {/* Quick-nav — tight pills that jump to the H2 sections below */}
+          {toc.length > 1 && (
+            <nav className="mt-5 flex flex-wrap gap-2" aria-label="Snabbnavigering">
+              {toc.map((t) => (
+                <a
+                  key={t.id}
+                  href={`#${t.id}`}
+                  className="inline-flex items-center rounded-full bg-white px-3.5 py-1.5 text-sm font-medium text-gray-700 shadow-sm transition hover:text-blue-700 hover:shadow"
+                >
+                  {t.text}
+                </a>
+              ))}
+            </nav>
+          )}
         </div>
       </section>
 
@@ -129,10 +151,10 @@ export default async function GenericPage({ params }: Props) {
       <div className="mt-10">
         {page.layout && page.layout.length > 0 ? (
           <RenderBlocks blocks={page.layout} />
-        ) : page.content ? (
+        ) : contentHtml ? (
           <article
-            className="prose prose-sm sm:prose max-w-none prose-headings:font-semibold prose-a:text-blue-700"
-            dangerouslySetInnerHTML={{ __html: page.content }}
+            className="prose prose-sm sm:prose max-w-none prose-headings:scroll-mt-24 prose-headings:font-semibold prose-a:text-blue-700"
+            dangerouslySetInnerHTML={{ __html: contentHtml }}
           />
         ) : null}
       </div>

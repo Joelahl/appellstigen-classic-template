@@ -114,7 +114,7 @@ export default function Footer({ siteName, site }: Props) {
           {siteConfig.disclaimer}
         </p>
         <p className="mt-4 text-xs text-gray-500">
-          © {year} {company?.legalName || name}. Alla rättigheter förbehållna. · 18+ · Spela ansvarsfullt
+          © {year} {company?.legalName || name}. Alla rättigheter förbehållna.
         </p>
       </div>
     </footer>

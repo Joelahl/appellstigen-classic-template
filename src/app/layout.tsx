@@ -65,7 +65,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   }
 
   return (
-    <html lang={siteConfig.locale}>
+    <html lang={siteConfig.locale} className="scroll-smooth">
       <head>
         {favicon && <link rel="icon" href={favicon} />}
         {/* Per-site theme tokens. --hero-bg is a light tint of the accent color
