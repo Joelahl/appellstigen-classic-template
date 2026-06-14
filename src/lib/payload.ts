@@ -324,15 +324,16 @@ export async function getPage(slug: string): Promise<Page | null> {
 // ── Site & authors ──────────────────────────────────────────────────────────
 const SITE_DOMAIN = process.env.NEXT_PUBLIC_DOMAIN || ''
 
-/** The current site's CMS record (branding/design). Falls back to first site. */
+/** The current site's CMS record (branding/design), matched strictly by domain.
+ *  Returns null if NEXT_PUBLIC_DOMAIN is unset or no record matches — the site
+ *  then uses its local siteConfig. Deliberately NO "first site" fallback: with
+ *  more than one site in the CMS that returns the wrong site's branding. */
 export async function getSite(): Promise<SiteData | null> {
+  if (!SITE_DOMAIN) return null
   type Res = { docs: Record<string, unknown>[] }
-  let data = await fetchFromCMS<Res>(
+  const data = await fetchFromCMS<Res>(
     `/sites?where[domain][equals]=${encodeURIComponent(SITE_DOMAIN)}&limit=1&depth=1`,
   )
-  if (!data.docs?.length) {
-    data = await fetchFromCMS<Res>(`/sites?limit=1&depth=1`)
-  }
   return data.docs?.length ? mapSite(data.docs[0]) : null
 }
 
