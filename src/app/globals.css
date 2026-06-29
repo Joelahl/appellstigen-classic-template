@@ -6,6 +6,8 @@
   :root {
     --color-primary: 30 64 175;   /* #1e40af */
     --color-accent: 245 158 11;   /* #f59e0b */
+    --success-green: #16a34a;     /* lively list + table accent */
+    --success-green-dark: #15803d;
   }
 
   html {
@@ -41,5 +43,72 @@
 
   .star-empty {
     @apply text-gray-300;
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Lively content — applies to every rendered .prose body (migrated   */
+  /* HTML, Lexical prose blocks, author bios) so all content feels alive */
+  /* ------------------------------------------------------------------ */
+
+  /* Bullet points in success green to make lists pop */
+  .prose ul > li::marker {
+    color: var(--success-green);
+    font-size: 1.05em;
+  }
+  .prose ol > li::marker {
+    color: var(--success-green);
+    font-weight: 700;
+  }
+
+  /* Tables: rounded card, green header, zebra rows, hover highlight */
+  .prose table {
+    width: 100%;
+    margin: 1.5em 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    font-size: 0.9em;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+  .prose thead {
+    background: linear-gradient(180deg, var(--success-green), var(--success-green-dark));
+  }
+  .prose thead th {
+    padding: 0.75em 1em;
+    border: 0;
+    color: #fff;
+    font-weight: 600;
+    text-align: left;
+  }
+  .prose tbody th,
+  .prose tbody td {
+    padding: 0.7em 1em;
+    border: 0;
+    border-top: 1px solid #eef2f7;
+    vertical-align: top;
+  }
+  .prose tbody tr:nth-child(even) {
+    background: #f8faf8;
+  }
+  .prose tbody tr:hover {
+    background: #ecfdf3;
+  }
+
+  /* Guide articles: green accent bar on section headings */
+  .article-guide h2 {
+    padding-left: 0.75rem;
+    border-left: 4px solid var(--success-green);
+  }
+
+  /* News articles: editorial drop-cap on the opening paragraph */
+  .article-news > p:first-of-type::first-letter {
+    float: left;
+    margin: 0.08em 0.12em 0 0;
+    color: var(--brand-accent, #f59e0b);
+    font-size: 3.1rem;
+    font-weight: 700;
+    line-height: 0.8;
   }
 }

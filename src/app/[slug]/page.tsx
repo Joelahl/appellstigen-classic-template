@@ -13,6 +13,17 @@ interface Props {
   params: Promise<{ slug: string }>
 }
 
+const fmtDate = (d?: string) =>
+  d ? new Date(d).toLocaleDateString('sv-SE', { year: 'numeric', month: 'long', day: 'numeric' }) : ''
+
+/** Rough reading-time estimate (~200 wpm) from an HTML string. */
+function readingMinutes(html?: string) {
+  if (!html) return 0
+  const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+  const words = text ? text.split(' ').length : 0
+  return words ? Math.max(1, Math.round(words / 200)) : 0
+}
+
 export const dynamicParams = true
 export const revalidate = 300
 export async function generateStaticParams() {
@@ -53,6 +64,10 @@ export default async function GenericPage({ params }: Props) {
   if (page.pageType === 'homepage') permanentRedirect('/')
 
   const isCategory = page.pageType === 'category'
+  const isGuide = page.pageType === 'guide'
+  const isNews = page.pageType === 'news'
+  // Guide + news read as long-form editorial: narrower column, distinct chrome.
+  const isArticle = isGuide || isNews
   const toplist = page.toplistCards || []
   const heroImg = site?.branding?.heroImageUrl
   const tw = page.title.trim().split(/\s+/)
@@ -64,6 +79,9 @@ export default async function GenericPage({ params }: Props) {
   const { html: contentHtml, items: toc } = usesHtml
     ? extractToc(page.content as string)
     : { html: page.content || '', items: [] }
+
+  const readMins = isGuide ? readingMinutes(contentHtml || (page.content as string)) : 0
+  const articleMod = isGuide ? 'article-guide' : isNews ? 'article-news' : ''
 
   return (
     <>
@@ -89,27 +107,74 @@ export default async function GenericPage({ params }: Props) {
               Jämförelse
             </p>
           )}
-          <h1 className="mt-1 font-bold leading-[1.05] text-[2.5rem] lg:text-[4.5rem]">
+          {isGuide && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#16a34a]/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#16a34a]">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+              </svg>
+              Guide
+            </span>
+          )}
+          {isNews && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#dc2626]/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#dc2626]">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
+                <path d="M18 14h-8M15 18h-5M10 6h8v4h-8z" />
+              </svg>
+              Nyhet
+            </span>
+          )}
+          <h1 className={`font-bold leading-[1.05] text-[2.5rem] lg:text-[4.5rem] ${isArticle ? 'mt-3' : 'mt-1'}`}>
             {titleLead && <span>{titleLead} </span>}
             <span style={{ color: 'var(--brand-accent, #f59e0b)' }}>{titleAccent}</span>
           </h1>
           {page.excerpt && <p className="mt-3 max-w-2xl text-lg text-gray-700">{page.excerpt}</p>}
-          <div className="mt-5">
+          <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
             <AuthorByline author={page.author} updatedAt={page.updatedAt} createdAt={page.createdAt} />
+
+            {/* Guide: estimated reading time */}
+            {isGuide && readMins > 0 && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 7v5l3 2" />
+                </svg>
+                {readMins} min läsning
+              </span>
+            )}
+
+            {/* News: prominent publish date */}
+            {isNews && page.createdAt && (
+              <span className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect x="3" y="4" width="18" height="18" rx="2" />
+                  <path d="M3 10h18M8 2v4M16 2v4" />
+                </svg>
+                Publicerad <time dateTime={page.createdAt}>{fmtDate(page.createdAt)}</time>
+              </span>
+            )}
           </div>
 
           {/* Quick-nav — tight pills that jump to the H2 sections below */}
           {toc.length > 1 && (
-            <nav className="mt-5 flex flex-wrap gap-2" aria-label="Snabbnavigering">
-              {toc.map((t) => (
-                <a
-                  key={t.id}
-                  href={`#${t.id}`}
-                  className="inline-flex items-center rounded-full bg-white px-3.5 py-1.5 text-sm font-medium text-gray-700 shadow-sm transition hover:text-blue-700 hover:shadow"
-                >
-                  {t.text}
-                </a>
-              ))}
+            <nav className="mt-5" aria-label={isGuide ? 'I den här guiden' : 'Snabbnavigering'}>
+              {isGuide && (
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  I den här guiden
+                </p>
+              )}
+              <div className="flex flex-wrap gap-2">
+                {toc.map((t) => (
+                  <a
+                    key={t.id}
+                    href={`#${t.id}`}
+                    className="inline-flex items-center rounded-full bg-white px-3.5 py-1.5 text-sm font-medium text-gray-700 shadow-sm transition hover:text-blue-700 hover:shadow"
+                  >
+                    {t.text}
+                  </a>
+                ))}
+              </div>
             </nav>
           )}
         </div>
@@ -147,20 +212,24 @@ export default async function GenericPage({ params }: Props) {
         </div>
       )}
 
-      {/* Main content: blocks or migrated HTML */}
-      <div className="mt-10">
+      {/* Main content: blocks or migrated HTML.
+          Guide/news read as long-form editorial — narrower measure. */}
+      <div className={`mt-10 ${isArticle ? 'mx-auto max-w-3xl' : ''}`}>
         {page.layout && page.layout.length > 0 ? (
           <RenderBlocks blocks={page.layout} />
         ) : contentHtml ? (
           <article
-            className="prose prose-sm sm:prose max-w-none prose-headings:scroll-mt-24 prose-headings:font-semibold prose-a:text-blue-700"
+            className={`prose prose-sm sm:prose max-w-none prose-headings:scroll-mt-24 prose-headings:font-semibold prose-a:text-blue-700 ${articleMod}`}
             dangerouslySetInnerHTML={{ __html: contentHtml }}
           />
         ) : null}
+
+        {/* Author bio footer — inside the article measure for guide/news */}
+        {isArticle && <AuthorBio author={page.author} />}
       </div>
 
-      {/* Author bio footer */}
-      <AuthorBio author={page.author} />
+      {/* Author bio footer (full-width pages) */}
+      {!isArticle && <AuthorBio author={page.author} />}
       </div>
     </>
   )

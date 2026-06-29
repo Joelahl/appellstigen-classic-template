@@ -140,7 +140,7 @@ export interface Page {
   id: string
   title: string
   slug: string
-  pageType: 'homepage' | 'category' | 'info' | 'legal' | 'other'
+  pageType: 'homepage' | 'category' | 'guide' | 'news' | 'info' | 'legal' | 'other'
   menuOrder: number
   excerpt?: string
   content?: string
