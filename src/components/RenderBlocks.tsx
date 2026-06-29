@@ -51,6 +51,8 @@ async function Block({ block }: { block: LayoutBlock }) {
           <img
             src={src}
             alt={(block.alt as string) || ''}
+            loading="lazy"
+            decoding="async"
             className="w-full rounded-xl object-cover"
           />
           {block.caption ? (
@@ -151,6 +153,8 @@ async function Block({ block }: { block: LayoutBlock }) {
             <img
               src={block.imageUrl as string}
               alt={(block.heading as string) || ''}
+              loading="lazy"
+              decoding="async"
               className="w-full rounded-xl object-cover sm:w-1/2"
             />
           ) : null}

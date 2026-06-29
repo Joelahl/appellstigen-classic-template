@@ -1,4 +1,4 @@
-/* eslint-disable @next/next/no-img-element */
+import Image from 'next/image'
 import Link from 'next/link'
 import siteConfig from '@/siteConfig'
 import MobileMenu from './MobileMenu'
@@ -18,7 +18,19 @@ export default function Header({ siteName, logoUrl, nav }: Props) {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Link href="/" className="flex items-center gap-2">
           {logoUrl ? (
-            <img src={logoUrl} alt={name} className="h-9 w-auto" />
+            // Optimized + high-priority: the logo is above the fold, so it
+            // should load eagerly (never lazy). `fill` + object-contain keeps
+            // the real aspect ratio for any logo without knowing its dimensions.
+            <span className="relative block h-9 w-44">
+              <Image
+                src={logoUrl}
+                alt={name}
+                fill
+                priority
+                sizes="176px"
+                className="object-contain object-left"
+              />
+            </span>
           ) : (
             <span className="text-xl font-bold" style={{ color: 'var(--brand, #1d4ed8)' }}>
               {name}

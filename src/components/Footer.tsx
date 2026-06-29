@@ -1,4 +1,4 @@
-/* eslint-disable @next/next/no-img-element */
+import Image from 'next/image'
 import Link from 'next/link'
 import siteConfig from '@/siteConfig'
 import type { SiteData } from '@/types'
@@ -28,7 +28,16 @@ export default function Footer({ siteName, site }: Props) {
           {/* Brand + company */}
           <div className="sm:col-span-2 lg:col-span-1">
             {footerLogo && (
-              <img src={footerLogo} alt={name} className="h-9 w-auto" />
+              // Below the fold — optimized and lazy-loaded by default.
+              <span className="relative block h-9 w-44">
+                <Image
+                  src={footerLogo}
+                  alt={name}
+                  fill
+                  sizes="176px"
+                  className="object-contain object-left"
+                />
+              </span>
             )}
             {/* Always show the site name + URL — under the logo, or alone if none */}
             <p className={`font-bold text-white ${footerLogo ? 'mt-2 text-base' : 'text-xl'}`}>

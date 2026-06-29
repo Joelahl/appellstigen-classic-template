@@ -1,4 +1,4 @@
-/* eslint-disable @next/next/no-img-element */
+import Image from 'next/image'
 import type { AffiliateLink } from '@/lib/payload'
 import RedirectCountdown from '@/components/RedirectCountdown'
 import siteConfig from '@/siteConfig'
@@ -19,12 +19,13 @@ export default function AffiliateInterstitial({
 
       <div className="mx-auto flex max-w-lg flex-col items-center px-4 py-20 text-center">
         {link.card?.cardImageUrl && (
-          <img
+          <Image
             src={link.card.cardImageUrl}
             alt={name}
             width={140}
             height={88}
-            className="mb-6 object-contain"
+            priority
+            className="mb-6 h-auto w-auto object-contain"
           />
         )}
         <h1 className="text-2xl font-bold text-gray-900">Du skickas vidare…</h1>
